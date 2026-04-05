@@ -20,6 +20,16 @@
     (click)="closeReader()">
     <app-reader-icon name="close" [size]="20" />
   </button>
+
+  @if (isDocViewerInfoVisible) {
+  <div class="doc-viewer-info">
+    <span>{{ 'readerPdf.docViewer.changesSavedInfo' | transloco }}</span>
+    <button class="dismiss-btn" (click)="dismissDocViewerInfo()">
+      <app-reader-icon name="close" [size]="14" />
+    </button>
+  </div>
+  }
+
   <div id="embedpdf-viewer"></div>
   }
 

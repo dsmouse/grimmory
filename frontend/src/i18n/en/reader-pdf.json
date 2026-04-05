@@ -19,5 +19,8 @@
   },
   "toast": {
     "failedToLoadBook": "Failed to load the book"
+  },
+  "docViewer": {
+    "changesSavedInfo": "Changes are written to file here"
   }
 }

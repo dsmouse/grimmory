@@ -61,6 +61,8 @@ export class PdfReaderComponent implements OnInit, OnDestroy, AfterViewInit {
   bookTitle = '';
   isFullscreen = false;
   viewerMode: 'book' | 'document' = 'book';
+  isDocViewerInfoVisible = false;
+  private readonly DOC_VIEWER_DISMISSED_KEY = 'grimmory_doc_viewer_info_dismissed';
   private embedPdfIframe: HTMLIFrameElement | null = null;
   private embedPdfMessageHandler?: (e: MessageEvent) => void;
   private embedPdfSaveResolve?: (buffer: ArrayBuffer | null) => void;
@@ -107,6 +109,9 @@ export class PdfReaderComponent implements OnInit, OnDestroy, AfterViewInit {
   private annotationToolbarObserver?: MutationObserver;
 
   ngOnInit(): void {
+    const dismissed = localStorage.getItem(this.DOC_VIEWER_DISMISSED_KEY);
+    this.isDocViewerInfoVisible = dismissed !== 'true';
+
     setTimeout(() => this.wakeLockService.enable(), 1000);
     this.startChromeAutoHide();
     document.addEventListener('fullscreenchange', this.onFullscreenChange);
@@ -245,6 +250,11 @@ export class PdfReaderComponent implements OnInit, OnDestroy, AfterViewInit {
 
     wrapper.appendChild(btn);
     toolbar.prepend(wrapper);
+  }
+
+  dismissDocViewerInfo(): void {
+    this.isDocViewerInfoVisible = false;
+    localStorage.setItem(this.DOC_VIEWER_DISMISSED_KEY, 'true');
   }
 
   async setViewerMode(mode: 'book' | 'document') {
