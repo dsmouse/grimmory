@@ -243,7 +243,7 @@ export class CbxReaderComponent implements OnInit, OnDestroy {
         this.nextBookInSeries = null;
         this.currentBook = null;
 
-        return from(this.bookService.ensureBookDetail(this.bookId, false)).pipe(
+        return from(this.bookService.fetchFreshBookDetail(this.bookId, false)).pipe(
           switchMap((book) => {
             // Use alternative bookType from query param if provided, otherwise use primary
             const resolvedBookType = (this.altBookType as BookType | undefined) ?? book.primaryFile?.bookType;

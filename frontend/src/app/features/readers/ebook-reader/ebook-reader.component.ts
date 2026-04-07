@@ -230,7 +230,7 @@ export class EbookReaderComponent implements OnInit, OnDestroy {
     this.bookId = +this.route.snapshot.paramMap.get('bookId')!;
     this.altBookType = this.route.snapshot.queryParamMap.get('bookType') ?? undefined;
 
-    return from(this.bookService.ensureBookDetail(this.bookId, false)).pipe(
+    return from(this.bookService.fetchFreshBookDetail(this.bookId, false)).pipe(
       switchMap((book) => {
         this.book = book;
 

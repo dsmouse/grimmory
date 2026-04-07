@@ -126,7 +126,7 @@ export class PdfReaderComponent implements OnInit, OnDestroy, AfterViewInit {
         this.bookId = +params.get('bookId')!;
         this.altBookType = this.route.snapshot.queryParamMap.get('bookType') ?? undefined;
 
-        return from(this.bookService.ensureBookDetail(this.bookId, false)).pipe(
+        return from(this.bookService.fetchFreshBookDetail(this.bookId, false)).pipe(
           switchMap((book) => {
             if (this.altBookType) {
               const altFile = book.alternativeFormats?.find(f => f.bookType === this.altBookType);
