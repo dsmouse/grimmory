@@ -4,8 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.booklore.app.dto.*;
 import org.booklore.app.service.AppBookService;
-import org.booklore.model.enums.BookFileType;
-import org.booklore.model.enums.ReadStatus;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,23 +26,9 @@ public class AppBookController {
     )
     @GetMapping
     public ResponseEntity<AppPageResponse<AppBookSummary>> getBooks(
-            @RequestParam(required = false, defaultValue = "0") Integer page,
-            @RequestParam(required = false, defaultValue = "50") Integer size,
-            @RequestParam(required = false, defaultValue = "addedOn") String sort,
-            @RequestParam(required = false, defaultValue = "desc") String dir,
-            @RequestParam(required = false) Long libraryId,
-            @RequestParam(required = false) Long shelfId,
-            @RequestParam(required = false) ReadStatus status,
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) BookFileType fileType,
-            @RequestParam(required = false) Integer minRating,
-            @RequestParam(required = false) Integer maxRating,
-            @RequestParam(required = false) String authors,
-            @RequestParam(required = false) String language) {
+            @ModelAttribute BookListRequest request) {
 
-        return ResponseEntity.ok(mobileBookService.getBooks(
-                page, size, sort, dir, libraryId, shelfId, status, search,
-                fileType, minRating, maxRating, authors, language));
+        return ResponseEntity.ok(mobileBookService.getBooks(request));
     }
 
     @Operation(
