@@ -1,23 +1,25 @@
-import {Component, inject, Input, OnDestroy, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import {Component, DestroyRef, inject, Input, OnInit} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {BaseChartDirective} from 'ng2-charts';
 import {ChartConfiguration, ChartData} from 'chart.js';
-import {BehaviorSubject, EMPTY, Observable, Subject} from 'rxjs';
-import {catchError, takeUntil} from 'rxjs/operators';
+import {BehaviorSubject, EMPTY, Observable} from 'rxjs';
+import {catchError} from 'rxjs/operators';
 import {Tooltip} from 'primeng/tooltip';
 import {GenreStatsResponse, UserStatsService} from '../../../../../settings/user-management/user-stats.service';
 import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
+import {AsyncPipe} from '@angular/common';
 
 type GenreChartData = ChartData<'bar', number[], string>;
 
 @Component({
   selector: 'app-genre-stats-chart',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective, Tooltip, TranslocoDirective],
+  imports: [
+    AsyncPipe,BaseChartDirective, Tooltip, TranslocoDirective],
   templateUrl: './genre-stats-chart.component.html',
   styleUrls: ['./genre-stats-chart.component.scss']
 })
-export class GenreStatsChartComponent implements OnInit, OnDestroy {
+export class GenreStatsChartComponent implements OnInit {
   @Input() maxGenres: number = 35;
 
   public readonly chartType = 'bar' as const;
@@ -26,7 +28,7 @@ export class GenreStatsChartComponent implements OnInit, OnDestroy {
 
   private readonly userStatsService = inject(UserStatsService);
   private readonly t = inject(TranslocoService);
-  private readonly destroy$ = new Subject<void>();
+  private readonly destroyRef = inject(DestroyRef);
   private readonly chartDataSubject: BehaviorSubject<GenreChartData>;
 
   constructor() {
@@ -161,15 +163,10 @@ export class GenreStatsChartComponent implements OnInit, OnDestroy {
     this.loadGenreStats();
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
   private loadGenreStats(): void {
     this.userStatsService.getGenreStats()
       .pipe(
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
         catchError((error) => {
           console.error('Error loading genre stats:', error);
           return EMPTY;

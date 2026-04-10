@@ -1,6 +1,6 @@
 import {Component, DestroyRef, inject, OnInit, QueryList, ViewChildren} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {startWith, tap} from 'rxjs/operators';
+import {startWith, take, tap} from 'rxjs/operators';
 import {PageTitleService} from "../../../../shared/service/page-title.service";
 
 import {BookdropFile, BookdropFinalizePayload, BookdropFinalizeResult, BookdropService, FileExtractionResult, BulkEditRequest as BackendBulkEditRequest, BulkEditResult as BackendBulkEditResult} from '../../service/bookdrop.service';
@@ -14,9 +14,9 @@ import {Select} from 'primeng/select';
 import {Tooltip} from 'primeng/tooltip';
 import {Divider} from 'primeng/divider';
 import {ConfirmationService, MessageService} from 'primeng/api';
-import {Subscription} from 'rxjs';
+
 import {InputGroup} from 'primeng/inputgroup';
-import {InputGroupAddonModule} from 'primeng/inputgroupaddon';
+import {InputGroupAddon} from 'primeng/inputgroupaddon';
 
 import {AppSettingsService} from '../../../../shared/service/app-settings.service';
 import {BookMetadata} from '../../../book/model/book.model';
@@ -60,7 +60,7 @@ export interface BookdropFileUI {
     NgClass,
     Paginator,
     InputGroup,
-    InputGroupAddonModule,
+    InputGroupAddon,
     TranslocoDirective,
   ],
 })
@@ -78,8 +78,6 @@ export class BookdropFileReviewComponent implements OnInit {
   private readonly t = inject(TranslocoService);
 
   @ViewChildren('metadataPicker') metadataPickers!: QueryList<BookdropFileMetadataPickerComponent>;
-
-  private routerSub!: Subscription;
 
   uploadPattern = '';
   _defaultLibraryId: string | null = null;
@@ -673,7 +671,7 @@ export class BookdropFileReviewComponent implements OnInit {
       data: {fileCount: totalCount},
     });
 
-    dialogRef?.onClose.subscribe((result: BulkEditResult | null) => {
+    dialogRef?.onClose.pipe(take(1)).subscribe((result: BulkEditResult | null) => {
       if (result) {
         this.applyBulkMetadataViaBackend(result);
       }
@@ -712,7 +710,7 @@ export class BookdropFileReviewComponent implements OnInit {
       },
     });
 
-    dialogRef?.onClose.subscribe((result: { results: FileExtractionResult[] } | null) => {
+    dialogRef?.onClose.pipe(take(1)).subscribe((result: { results: FileExtractionResult[] } | null) => {
       if (result?.results) {
         this.applyExtractedMetadata(result.results);
       }

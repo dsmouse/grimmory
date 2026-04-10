@@ -1,3 +1,8 @@
+:host {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 250px 300px;
+}
+
 .author-card {
   background-color: var(--card-background);
   border-radius: 8px;

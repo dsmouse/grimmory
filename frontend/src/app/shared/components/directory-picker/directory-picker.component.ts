@@ -7,7 +7,7 @@ import {InputText} from 'primeng/inputtext';
 import {FormsModule} from '@angular/forms';
 import {ProgressSpinner} from 'primeng/progressspinner';
 import {MenuItem} from 'primeng/api';
-import {CheckboxModule} from 'primeng/checkbox';
+import {Checkbox} from 'primeng/checkbox';
 import {InputIcon} from 'primeng/inputicon';
 import {Button} from 'primeng/button';
 import {IconField} from 'primeng/iconfield';
@@ -23,7 +23,7 @@ import {TranslocoDirective, TranslocoPipe} from '@jsverse/transloco';
     InputText,
     FormsModule,
     ProgressSpinner,
-    CheckboxModule,
+    Checkbox,
     InputIcon,
     Button,
     InputIcon,

@@ -1,5 +1,4 @@
 import {Component, computed, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {BaseChartDirective} from 'ng2-charts';
 import {ChartConfiguration, ChartData, Chart} from 'chart.js';
 import {Tooltip} from 'primeng/tooltip';
@@ -42,7 +41,7 @@ type StatusChartData = ChartData<'doughnut', number[], string>;
 @Component({
   selector: 'app-read-status-chart',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective, Tooltip, TranslocoDirective],
+  imports: [BaseChartDirective, Tooltip, TranslocoDirective],
   templateUrl: './read-status-chart.component.html',
   styleUrls: ['./read-status-chart.component.scss']
 })

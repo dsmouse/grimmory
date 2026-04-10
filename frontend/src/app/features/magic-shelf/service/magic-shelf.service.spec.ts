@@ -2,7 +2,7 @@ import {HttpTestingController} from '@angular/common/http/testing';
 import {TestBed} from '@angular/core/testing';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
-import {createAuthServiceStub, createQueryClientHarness, flushSignalAndQueryEffects} from '../../../core/testing/query-testing';
+import {createAuthServiceStub, createQueryClientHarness, flushSignalAndQueryEffects, flushQueryAsync} from '../../../core/testing/query-testing';
 import type {Book} from '../../book/model/book.model';
 import {AuthService} from '../../../shared/service/auth.service';
 import type {GroupRule} from '../component/magic-shelf-component';
@@ -46,12 +46,7 @@ function buildBook(id: number, overrides: Partial<Book> = {}): Book {
 }
 
 async function flushShelvesQuery(): Promise<void> {
-  await Promise.resolve();
-  flushSignalAndQueryEffects();
-  await new Promise(resolve => setTimeout(resolve, 0));
-  flushSignalAndQueryEffects();
-  await Promise.resolve();
-  flushSignalAndQueryEffects();
+  await flushQueryAsync();
 }
 
 describe('MagicShelfService', () => {

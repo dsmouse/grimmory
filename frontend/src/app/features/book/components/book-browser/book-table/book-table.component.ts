@@ -1,9 +1,9 @@
-import {Component, EventEmitter, inject, Input, OnChanges, OnDestroy, OnInit, Output} from '@angular/core';
+import {Component, ElementRef, EventEmitter, inject, Input, OnChanges, OnDestroy, OnInit, Output} from '@angular/core';
 import {TableModule} from 'primeng/table';
 import {DatePipe, NgClass} from '@angular/common';
 import {Rating} from 'primeng/rating';
 import {FormsModule} from '@angular/forms';
-import {TooltipModule} from "primeng/tooltip";
+import {Tooltip} from 'primeng/tooltip';
 import {Book, BookMetadata, ReadStatus} from '../../../model/book.model';
 import {SortOption} from '../../../model/sort.model';
 import {UrlHelperService} from '../../../../../shared/service/url-helper.service';
@@ -13,7 +13,6 @@ import {BookService} from '../../../service/book.service';
 import {BookMetadataManageService} from '../../../service/book-metadata-manage.service';
 import {MessageService} from 'primeng/api';
 import {RouterLink} from '@angular/router';
-import {Subject} from 'rxjs';
 import {UserService} from '../../../../settings/user-management/user.service';
 import {ReadStatusHelper} from '../../../helpers/read-status.helper';
 import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
@@ -27,7 +26,7 @@ import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
     Rating,
     FormsModule,
     Button,
-    TooltipModule,
+    Tooltip,
     NgClass,
     RouterLink,
     TranslocoDirective,
@@ -54,9 +53,10 @@ export class BookTableComponent implements OnInit, OnDestroy, OnChanges {
   private datePipe = inject(DatePipe);
   private readStatusHelper = inject(ReadStatusHelper);
   private readonly t = inject(TranslocoService);
+  private elementRef = inject(ElementRef);
 
   private metadataCenterViewMode: 'route' | 'dialog' = 'route';
-  private destroy$ = new Subject<void>();
+  private resizeListener = this.setScrollHeight.bind(this);
 
   readonly allColumns: { field: string; header: string }[] = [
     {field: 'readStatus', header: this.t.translate('book.columnPref.columns.readStatus')},
@@ -94,7 +94,7 @@ export class BookTableComponent implements OnInit, OnDestroy, OnChanges {
     this.selectedBookIds = this.preselectedBookIds;
     this.selectedBooks = this.bookService.getBooksByIds([...this.selectedBookIds]);
     this.setScrollHeight();
-    window.addEventListener('resize', this.setScrollHeight.bind(this));
+    window.addEventListener('resize', this.resizeListener);
   }
 
   setScrollHeight() {
@@ -105,10 +105,19 @@ export class BookTableComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnChanges() {
-    const wrapperElements: HTMLCollection = document.getElementsByClassName('p-virtualscroller');
-    Array.prototype.forEach.call(wrapperElements, function (wrapperElement) {
-      wrapperElement.style["height"] = 'calc(100dvh - 160px)';
+    const wrapperElements = this.elementRef.nativeElement.querySelectorAll('.p-virtualscroller');
+    wrapperElements.forEach((wrapperElement: Element) => {
+      if (wrapperElement instanceof HTMLElement) {
+        wrapperElement.style.height = 'calc(100dvh - 160px)';
+      }
     });
+  }
+
+  scrollToTop(): void {
+    const tableElement = this.elementRef.nativeElement.querySelector('.p-datatable-wrapper');
+    if (tableElement instanceof HTMLElement) {
+      tableElement.scrollTop = 0;
+    }
   }
 
   selectAllBooks(): void {
@@ -343,8 +352,6 @@ export class BookTableComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-    window.removeEventListener('resize', this.setScrollHeight.bind(this));
+    window.removeEventListener('resize', this.resizeListener);
   }
 }

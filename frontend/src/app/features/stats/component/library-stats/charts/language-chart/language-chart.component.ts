@@ -1,5 +1,4 @@
 import {Component, computed, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {BaseChartDirective} from 'ng2-charts';
 import {ChartConfiguration, ChartData} from 'chart.js';
 import {LibraryFilterService} from '../../service/library-filter.service';
@@ -129,7 +128,7 @@ const LANGUAGE_NAMES: Record<string, string> = {
 @Component({
   selector: 'app-language-chart',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective, TranslocoDirective],
+  imports: [BaseChartDirective, TranslocoDirective],
   templateUrl: './language-chart.component.html',
   styleUrls: ['./language-chart.component.scss']
 })

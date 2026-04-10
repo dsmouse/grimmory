@@ -1,5 +1,4 @@
-import {Component, effect, inject, OnDestroy} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import {Component, DestroyRef, effect, inject} from '@angular/core';
 import {BaseChartDirective} from 'ng2-charts';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {Chart, ChartConfiguration, ChartData, TooltipModel} from 'chart.js';
@@ -7,6 +6,7 @@ import {LibraryFilterService} from '../../service/library-filter.service';
 import {BookService} from '../../../../../book/service/book.service';
 import {Book, ReadStatus} from '../../../../../book/model/book.model';
 import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
+import {AsyncPipe} from '@angular/common';
 
 interface AuthorStats {
   name: string;
@@ -40,14 +40,16 @@ const COMPLETION_COLORS = {
 @Component({
   selector: 'app-author-universe-chart',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective, TranslocoDirective],
+  imports: [
+    AsyncPipe, BaseChartDirective, TranslocoDirective],
   templateUrl: './author-universe-chart.component.html',
   styleUrls: ['./author-universe-chart.component.scss']
 })
-export class AuthorUniverseChartComponent implements OnDestroy {
+export class AuthorUniverseChartComponent {
   private readonly bookService = inject(BookService);
   private readonly libraryFilterService = inject(LibraryFilterService);
   private readonly t = inject(TranslocoService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly syncChartEffect = effect(() => {
     if (this.bookService.isBooksLoading()) {
       return;
@@ -71,10 +73,9 @@ export class AuthorUniverseChartComponent implements OnDestroy {
 
   constructor() {
     this.initChartOptions();
-  }
-
-  ngOnDestroy(): void {
-    document.getElementById('author-chart-tooltip')?.remove();
+    this.destroyRef.onDestroy(() => {
+      document.getElementById('author-chart-tooltip')?.remove();
+    });
   }
 
   private initChartOptions(): void {
@@ -485,6 +486,15 @@ export class AuthorUniverseChartComponent implements OnDestroy {
     return insights;
   }
 
+  private escapeHtml(value: string): string {
+    return value
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
   private handleExternalTooltip(context: { chart: Chart; tooltip: TooltipModel<'bubble'> }): void {
     const {chart, tooltip} = context;
     let tooltipEl = document.getElementById('author-chart-tooltip');
@@ -529,8 +539,9 @@ export class AuthorUniverseChartComponent implements OnDestroy {
       ? `${stats.avgRating.toFixed(2)} \u2605`
       : this.t.translate('statsLibrary.authorUniverse.tooltipNoRatings');
 
+    const safeGenres = this.escapeHtml(stats.categories.slice(0, 3).join(', '));
     const categoriesHtml = stats.categories.length > 0
-      ? `<div style="color:rgba(255,255,255,0.9);font-size:12px;line-height:1.6">${this.t.translate('statsLibrary.authorUniverse.tooltipGenres', {genres: stats.categories.slice(0, 3).join(', ')})}</div>`
+      ? `<div style="color:rgba(255,255,255,0.9);font-size:12px;line-height:1.6">${this.t.translate('statsLibrary.authorUniverse.tooltipGenres', {genres: safeGenres})}</div>`
       : '';
 
     const booksLine = this.t.translate('statsLibrary.authorUniverse.tooltipBooks', {count: stats.bookCount});
@@ -538,8 +549,9 @@ export class AuthorUniverseChartComponent implements OnDestroy {
     const ratingLine = this.t.translate('statsLibrary.authorUniverse.tooltipAvgRating', {rating: ratingText});
     const readLine = this.t.translate('statsLibrary.authorUniverse.tooltipRead', {read: stats.readCount, total: stats.bookCount, percent: Math.round(stats.completionRate)});
 
+    const safeName = this.escapeHtml(stats.name);
     tooltipEl.innerHTML = `
-      <div style="color:#fff;font-size:14px;font-weight:700;margin-bottom:6px">${stats.name}</div>
+      <div style="color:#fff;font-size:14px;font-weight:700;margin-bottom:6px">${safeName}</div>
       <div style="color:rgba(255,255,255,0.9);font-size:12px;line-height:1.6">${booksLine}</div>
       <div style="color:rgba(255,255,255,0.9);font-size:12px;line-height:1.6">${pagesLine}</div>
       <div style="color:rgba(255,255,255,0.9);font-size:12px;line-height:1.6">${ratingLine}</div>

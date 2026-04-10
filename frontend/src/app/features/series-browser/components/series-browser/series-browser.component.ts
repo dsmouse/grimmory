@@ -1,4 +1,5 @@
-import {Component, HostListener, computed, inject, OnInit, signal} from '@angular/core';
+import {Component, DestroyRef, HostListener, computed, inject, OnInit, signal, ViewChild} from '@angular/core';
+import {computeGridColumns} from '../../../../shared/util/viewport.util';
 import {NgStyle} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {ProgressSpinner} from 'primeng/progressspinner';
@@ -7,10 +8,12 @@ import {Select} from 'primeng/select';
 import {Slider} from 'primeng/slider';
 import {Popover} from 'primeng/popover';
 import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
-import {VirtualScrollerModule} from '@iharbeck/ngx-virtual-scroller';
+import {CdkVirtualScrollViewport, CdkVirtualForOf} from '@angular/cdk/scrolling';
+import {CdkAutoSizeVirtualScroll} from '@angular/cdk-experimental/scrolling';
 import {SeriesDataService} from '../../service/series-data.service';
 import {SeriesSummary} from '../../model/series.model';
 import {SeriesCardComponent} from '../series-card/series-card.component';
+import {chunk} from '../../../../shared/util/array.util';
 import {BookService} from '../../../book/service/book.service';
 import {ReadStatus} from '../../../book/model/book.model';
 import {PageTitleService} from '../../../../shared/service/page-title.service';
@@ -42,7 +45,9 @@ interface SortOption {
     Popover,
     TranslocoDirective,
     SeriesCardComponent,
-    VirtualScrollerModule
+    CdkVirtualScrollViewport,
+    CdkVirtualForOf,
+    CdkAutoSizeVirtualScroll,
   ]
 })
 export class SeriesBrowserComponent implements OnInit {
@@ -51,13 +56,34 @@ export class SeriesBrowserComponent implements OnInit {
   private static readonly BASE_HEIGHT = 285;
   private static readonly MOBILE_BASE_WIDTH = 180;
   private static readonly MOBILE_BASE_HEIGHT = 250;
+  private static readonly GRID_GAP = 20;
 
   private seriesDataService = inject(SeriesDataService);
   private bookService = inject(BookService);
   private pageTitle = inject(PageTitleService);
   private t = inject(TranslocoService);
   private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
   protected seriesScaleService = inject(SeriesScalePreferenceService);
+
+  virtualScroller: CdkVirtualScrollViewport | undefined;
+
+  @ViewChild(CdkVirtualScrollViewport)
+  set scrollViewport(vp: CdkVirtualScrollViewport | undefined) {
+    this.virtualScroller = vp;
+    this.viewportResizeObserver?.disconnect();
+    if (vp) {
+      const el = vp.elementRef.nativeElement as HTMLElement;
+      this.viewportWidth.set(el.clientWidth);
+      this.viewportResizeObserver = new ResizeObserver(entries => {
+        this.viewportWidth.set(entries[0]?.contentRect.width ?? el.clientWidth);
+      });
+      this.viewportResizeObserver.observe(el);
+    }
+  }
+
+  private readonly viewportWidth = signal(0);
+  private viewportResizeObserver: ResizeObserver | undefined;
 
   readonly isBooksLoading = this.bookService.isBooksLoading;
   private readonly searchTerm = signal('');
@@ -109,6 +135,14 @@ export class SeriesBrowserComponent implements OnInit {
     return `${this.cardWidth}px`;
   }
 
+  readonly gridColumns = computed(() => {
+    return computeGridColumns(this.viewportWidth(), this.cardWidth || 230, SeriesBrowserComponent.GRID_GAP);
+  });
+
+  readonly seriesRows = computed(() => {
+    return chunk(this.filteredSeries(), this.gridColumns());
+  });
+
   get searchValue(): string {
     return this.searchTerm();
   }
@@ -123,6 +157,7 @@ export class SeriesBrowserComponent implements OnInit {
 
   ngOnInit(): void {
     this.pageTitle.setPageTitle(this.t.translate('seriesBrowser.pageTitle'));
+    this.destroyRef.onDestroy(() => this.viewportResizeObserver?.disconnect());
 
     this.filterOptions = [
       {label: this.t.translate('seriesBrowser.filters.all'), value: 'all'},
@@ -141,6 +176,8 @@ export class SeriesBrowserComponent implements OnInit {
       {label: this.t.translate('seriesBrowser.sort.recentlyAdded'), value: 'recently-added'}
     ];
   }
+
+
 
   onSearchChange(value: string): void {
     this.searchTerm.set(value);

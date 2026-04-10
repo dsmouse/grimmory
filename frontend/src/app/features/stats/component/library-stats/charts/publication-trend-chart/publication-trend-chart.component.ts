@@ -1,5 +1,4 @@
 import {Component, computed, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {BaseChartDirective} from 'ng2-charts';
 import {ChartConfiguration, ChartData} from 'chart.js';
 import {LibraryFilterService} from '../../service/library-filter.service';
@@ -30,7 +29,7 @@ type TrendChartData = ChartData<'line', number[], string>;
 @Component({
   selector: 'app-publication-trend-chart',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective, TranslocoDirective],
+  imports: [BaseChartDirective, TranslocoDirective],
   templateUrl: './publication-trend-chart.component.html',
   styleUrls: ['./publication-trend-chart.component.scss']
 })

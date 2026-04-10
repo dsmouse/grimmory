@@ -1,5 +1,4 @@
 import {Component, computed, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {BaseChartDirective} from 'ng2-charts';
 import {ChartConfiguration, ChartData} from 'chart.js';
 import {LibraryFilterService} from '../../service/library-filter.service';
@@ -28,7 +27,7 @@ const SCORE_RANGE_DEFS: { key: ScoreRangeKey; min: number; max: number; color: s
 @Component({
   selector: 'app-metadata-score-chart',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective, TranslocoDirective],
+  imports: [BaseChartDirective, TranslocoDirective],
   templateUrl: './metadata-score-chart.component.html',
   styleUrls: ['./metadata-score-chart.component.scss']
 })

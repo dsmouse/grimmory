@@ -115,8 +115,7 @@ describe("AppComponent", () => {
         { provide: LibraryLoadingService, useValue: libraryLoadingService },
         { provide: AuthService, useValue: authService },
         ConfirmationService,
-        MessageService,
-      ],
+        MessageService],
     });
 
     fixture = TestBed.createComponent(AppComponent);
@@ -210,12 +209,10 @@ describe("AppComponent", () => {
 
     expect(bookService.handleBookUpdate).toHaveBeenCalledWith({ id: 1 });
     expect(bookService.handleMultipleBookCoverPatches).toHaveBeenCalledWith([
-      { id: 1 },
-    ]);
+      { id: 1 }]);
     expect(bookService.handleRemovedBookIds).toHaveBeenCalledWith([1, 2]);
     expect(bookService.handleMultipleBookUpdates).toHaveBeenCalledWith([
-      { id: 3 },
-    ]);
+      { id: 3 }]);
     expect(metadataProgressService.handleIncomingProgress).toHaveBeenCalledWith(
       { taskId: "task-1" },
     );

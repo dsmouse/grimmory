@@ -1,4 +1,5 @@
-import {AfterViewChecked, Component, computed, ElementRef, inject, OnInit, signal, ViewChild} from '@angular/core';
+import {AfterViewChecked, Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild} from '@angular/core';
+import {computeGridColumns} from '../../../../shared/util/viewport.util';
 import {ActivatedRoute, Router} from '@angular/router';
 import {NgClass, NgStyle} from '@angular/common';
 import {Tab, TabList, TabPanel, TabPanels, Tabs} from 'primeng/tabs';
@@ -6,7 +7,8 @@ import {ProgressSpinner} from 'primeng/progressspinner';
 import {Button} from 'primeng/button';
 import {Tag} from 'primeng/tag';
 import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
-import {VirtualScrollerModule} from '@iharbeck/ngx-virtual-scroller';
+import {CdkVirtualScrollViewport, CdkVirtualForOf} from '@angular/cdk/scrolling';
+import {CdkAutoSizeVirtualScroll} from '@angular/cdk-experimental/scrolling';
 import {MessageService} from 'primeng/api';
 import {Tooltip} from 'primeng/tooltip';
 import {AuthorService} from '../../service/author.service';
@@ -19,6 +21,7 @@ import {UserService} from '../../../settings/user-management/user.service';
 import {AuthorMatchComponent} from '../author-match/author-match.component';
 import {AuthorEditorComponent} from '../author-editor/author-editor.component';
 import {PageTitleService} from '../../../../shared/service/page-title.service';
+import {chunk} from '../../../../shared/util/array.util';
 
 @Component({
   selector: 'app-author-detail',
@@ -38,13 +41,17 @@ import {PageTitleService} from '../../../../shared/service/page-title.service';
     Tag,
     TranslocoDirective,
     Tooltip,
-    VirtualScrollerModule,
+    CdkVirtualScrollViewport,
+    CdkVirtualForOf,
+    CdkAutoSizeVirtualScroll,
     BookCardComponent,
     AuthorMatchComponent,
     AuthorEditorComponent
   ]
 })
 export class AuthorDetailComponent implements OnInit, AfterViewChecked {
+
+  private static readonly GRID_GAP = 21;
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -56,8 +63,27 @@ export class AuthorDetailComponent implements OnInit, AfterViewChecked {
   protected userService = inject(UserService);
   private pageTitle = inject(PageTitleService);
   private t = inject(TranslocoService);
+  private destroyRef = inject(DestroyRef);
 
   @ViewChild('descriptionContent') descriptionContentRef?: ElementRef<HTMLElement>;
+  virtualScroller?: CdkVirtualScrollViewport;
+
+  @ViewChild(CdkVirtualScrollViewport)
+  set scrollViewport(vp: CdkVirtualScrollViewport | undefined) {
+    this.virtualScroller = vp;
+    this.viewportResizeObserver?.disconnect();
+    if (vp) {
+      const el = vp.elementRef.nativeElement as HTMLElement;
+      this.viewportWidth.set(el.clientWidth);
+      this.viewportResizeObserver = new ResizeObserver(entries => {
+        this.viewportWidth.set(entries[0]?.contentRect.width ?? el.clientWidth);
+      });
+      this.viewportResizeObserver.observe(el);
+    }
+  }
+
+  private readonly viewportWidth = signal(0);
+  private viewportResizeObserver: ResizeObserver | undefined;
 
   loading = true;
   tab = 'books';
@@ -87,6 +113,14 @@ export class AuthorDetailComponent implements OnInit, AfterViewChecked {
     return this.coverScalePreferenceService.gridColumnMinWidth();
   }
 
+  readonly gridColumns = computed(() => {
+    return computeGridColumns(this.viewportWidth(), parseInt(this.gridColumnMinWidth, 10) || 180, AuthorDetailComponent.GRID_GAP);
+  });
+
+  readonly bookRows = computed(() => {
+    return chunk(this.authorBooks(), this.gridColumns());
+  });
+
   get photoUrl(): string {
     const author = this.author();
     if (!author) return '';
@@ -105,7 +139,10 @@ export class AuthorDetailComponent implements OnInit, AfterViewChecked {
       this.tab = tabParam;
     }
     this.loadAuthor(authorId);
+    this.destroyRef.onDestroy(() => this.viewportResizeObserver?.disconnect());
   }
+
+
 
   ngAfterViewChecked(): void {
     if (!this.isExpanded && this.descriptionContentRef) {

@@ -1,24 +1,26 @@
 import {Component, DestroyRef, effect, inject, signal} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {Subject} from 'rxjs';
-import {takeUntil, debounceTime, distinctUntilChanged, filter} from 'rxjs/operators';
+import {debounceTime, distinctUntilChanged, filter} from 'rxjs/operators';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {ReaderLeftSidebarService, LeftSidebarTab} from './panel.service';
 import {BookNoteV2} from '../../../../../shared/service/book-note-v2.service';
 import {ReaderIconComponent} from '../../shared/icon.component';
+import {DatePipe, DecimalPipe} from '@angular/common';
 
 @Component({
   selector: 'app-reader-left-sidebar',
   standalone: true,
   templateUrl: './panel.component.html',
   styleUrls: ['./panel.component.scss'],
-  imports: [CommonModule, FormsModule, TranslocoDirective, ReaderIconComponent]
+  imports: [
+    DecimalPipe,
+    DatePipe,FormsModule, TranslocoDirective, ReaderIconComponent]
 })
 export class ReaderLeftSidebarComponent {
   private readonly leftSidebarService = inject(ReaderLeftSidebarService);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly destroy$ = new Subject<void>();
   private closeAnimationTimeout: ReturnType<typeof setTimeout> | null = null;
 
   readonly activeTab = this.leftSidebarService.activeTab;
@@ -58,14 +60,12 @@ export class ReaderLeftSidebarComponent {
         debounceTime(500),
         distinctUntilChanged(),
         filter(query => query.length >= 3 || query.length === 0),
-        takeUntil(this.destroy$)
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(query => this.leftSidebarService.search(query));
 
     this.destroyRef.onDestroy(() => {
       this.clearCloseAnimation();
-      this.destroy$.next();
-      this.destroy$.complete();
     });
   }
 

@@ -1,5 +1,4 @@
 import {Component, ViewChild, ElementRef, OnDestroy, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {Button} from 'primeng/button';
 import {MessageService} from 'primeng/api';
 import {CustomFontService} from '../../../../shared/service/custom-font.service';
@@ -12,7 +11,7 @@ import {TranslocoDirective, TranslocoPipe, TranslocoService} from '@jsverse/tran
 @Component({
   selector: 'app-font-upload-dialog',
   standalone: true,
-  imports: [CommonModule, Button, InputText, FormsModule, TranslocoDirective, TranslocoPipe],
+  imports: [Button, InputText, FormsModule, TranslocoDirective, TranslocoPipe],
   templateUrl: './font-upload-dialog.component.html',
   styleUrls: ['./font-upload-dialog.component.scss']
 })

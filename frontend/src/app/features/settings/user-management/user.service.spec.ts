@@ -3,7 +3,7 @@ import {TestBed} from '@angular/core/testing';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {AuthService} from '../../../shared/service/auth.service';
-import {createAuthServiceStub, createQueryClientHarness, flushSignalAndQueryEffects} from '../../../core/testing/query-testing';
+import {createAuthServiceStub, createQueryClientHarness, flushSignalAndQueryEffects, flushQueryAsync} from '../../../core/testing/query-testing';
 import {CURRENT_USER_QUERY_KEY} from './user-query-keys';
 import {type User, type UserSettings, UserService} from './user.service';
 
@@ -117,12 +117,7 @@ function buildUser(overrides: BuildUserOverrides = {}): User {
 }
 
 async function flushCurrentUserQuery(): Promise<void> {
-  await Promise.resolve();
-  flushSignalAndQueryEffects();
-  await new Promise(resolve => setTimeout(resolve, 0));
-  flushSignalAndQueryEffects();
-  await Promise.resolve();
-  flushSignalAndQueryEffects();
+  await flushQueryAsync();
 }
 
 describe('UserService', () => {

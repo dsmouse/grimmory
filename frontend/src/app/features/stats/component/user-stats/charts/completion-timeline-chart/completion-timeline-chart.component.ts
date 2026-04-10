@@ -1,22 +1,24 @@
-import {Component, inject, Input, OnDestroy, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import {Component, DestroyRef, inject, Input, OnInit} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {BaseChartDirective} from 'ng2-charts';
 import {ChartConfiguration, ChartData} from 'chart.js';
-import {BehaviorSubject, EMPTY, Observable, Subject} from 'rxjs';
-import {catchError, takeUntil} from 'rxjs/operators';
+import {BehaviorSubject, EMPTY, Observable} from 'rxjs';
+import {catchError} from 'rxjs/operators';
 import {CompletionTimelineResponse, UserStatsService} from '../../../../../settings/user-management/user-stats.service';
 import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
+import {AsyncPipe} from '@angular/common';
 
 type CompletionChartData = ChartData<'bar', number[], string>;
 
 @Component({
   selector: 'app-completion-timeline-chart',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective, TranslocoDirective],
+  imports: [
+    AsyncPipe,BaseChartDirective, TranslocoDirective],
   templateUrl: './completion-timeline-chart.component.html',
   styleUrls: ['./completion-timeline-chart.component.scss']
 })
-export class CompletionTimelineChartComponent implements OnInit, OnDestroy {
+export class CompletionTimelineChartComponent implements OnInit {
   @Input() initialYear: number = new Date().getFullYear();
 
   public currentYear: number = new Date().getFullYear();
@@ -26,7 +28,7 @@ export class CompletionTimelineChartComponent implements OnInit, OnDestroy {
 
   private readonly userStatsService = inject(UserStatsService);
   private readonly t = inject(TranslocoService);
-  private readonly destroy$ = new Subject<void>();
+  private readonly destroyRef = inject(DestroyRef);
   private readonly chartDataSubject: BehaviorSubject<CompletionChartData>;
 
   private readonly monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -128,11 +130,6 @@ export class CompletionTimelineChartComponent implements OnInit, OnDestroy {
     this.loadCompletionTimeline(this.currentYear);
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
   public changeYear(delta: number): void {
     this.currentYear += delta;
     this.loadCompletionTimeline(this.currentYear);
@@ -141,7 +138,7 @@ export class CompletionTimelineChartComponent implements OnInit, OnDestroy {
   private loadCompletionTimeline(year: number): void {
     this.userStatsService.getCompletionTimelineForYear(year)
       .pipe(
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
         catchError((error) => {
           console.error('Error loading completion timeline:', error);
           return EMPTY;

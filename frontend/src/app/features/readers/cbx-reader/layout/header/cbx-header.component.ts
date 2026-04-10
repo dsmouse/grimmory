@@ -2,12 +2,11 @@ import {Component, inject, Input} from '@angular/core';
 import {TranslocoPipe} from '@jsverse/transloco';
 import {CbxHeaderService} from './cbx-header.service';
 import {ReaderIconComponent} from '../../../ebook-reader';
-import {CommonModule} from '@angular/common';
 
 @Component({
   selector: 'app-cbx-header',
   standalone: true,
-  imports: [CommonModule, TranslocoPipe, ReaderIconComponent],
+  imports: [TranslocoPipe, ReaderIconComponent],
   templateUrl: './cbx-header.component.html',
   styleUrls: ['./cbx-header.component.scss']
 })

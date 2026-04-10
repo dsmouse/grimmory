@@ -1,5 +1,4 @@
 import {AfterViewInit, Component, effect, ElementRef, inject, ViewChild} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {Tooltip} from 'primeng/tooltip';
 import {BookService} from '../../../../../book/service/book.service';
 import {Book, ReadStatus} from '../../../../../book/model/book.model';
@@ -25,7 +24,7 @@ interface SankeyLink {
 @Component({
   selector: 'app-book-flow-chart',
   standalone: true,
-  imports: [CommonModule, Tooltip, TranslocoDirective],
+  imports: [Tooltip, TranslocoDirective],
   templateUrl: './book-flow-chart.component.html',
   styleUrls: ['./book-flow-chart.component.scss']
 })

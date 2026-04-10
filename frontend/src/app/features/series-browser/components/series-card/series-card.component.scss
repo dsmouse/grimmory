@@ -1,3 +1,8 @@
+:host {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 230px 285px;
+}
+
 .series-card {
   display: flex;
   flex-direction: column;

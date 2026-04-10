@@ -1,5 +1,4 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {CommonModule} from '@angular/common';
 
 export type ReaderIconName =
   | 'menu'
@@ -211,7 +210,7 @@ const ICONS: Record<ReaderIconName, IconPath[]> = {
   selector: 'app-reader-icon',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <svg
       [attr.width]="size"

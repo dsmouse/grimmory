@@ -1,18 +1,19 @@
 import {Component, DestroyRef, effect, inject, signal} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {TocItem} from 'epubjs';
 import {ReaderSidebarService, SidebarTab} from './sidebar.service';
 import {ReaderIconComponent} from '../../shared/icon.component';
 import {CoverPlaceholderComponent} from '../../../../../shared/components/cover-generator/cover-generator.component';
+import {DatePipe, NgTemplateOutlet} from '@angular/common';
 
 @Component({
   selector: 'app-reader-sidebar',
   standalone: true,
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss'],
-  imports: [CommonModule, FormsModule, TranslocoDirective, ReaderIconComponent, CoverPlaceholderComponent]
+  imports: [
+    DatePipe, NgTemplateOutlet, FormsModule, TranslocoDirective, ReaderIconComponent, CoverPlaceholderComponent]
 })
 export class ReaderSidebarComponent {
   private readonly sidebarService = inject(ReaderSidebarService);

@@ -1,5 +1,4 @@
 import {Component, computed, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {BaseChartDirective} from 'ng2-charts';
 import {ChartConfiguration, ChartData} from 'chart.js';
 import {LibraryFilterService} from '../../service/library-filter.service';
@@ -27,7 +26,7 @@ const FORMAT_COLORS: Record<string, string> = {
 @Component({
   selector: 'app-book-formats-chart',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective, TranslocoDirective],
+  imports: [BaseChartDirective, TranslocoDirective],
   templateUrl: './book-formats-chart.component.html',
   styleUrls: ['./book-formats-chart.component.scss']
 })

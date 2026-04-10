@@ -1,5 +1,4 @@
 import {Component, inject, OnDestroy, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {BaseChartDirective} from 'ng2-charts';
 import {ChartConfiguration, ChartData} from 'chart.js';
 import {BehaviorSubject, EMPTY, Observable, Subject} from 'rxjs';
@@ -9,13 +8,15 @@ import {Tooltip} from 'primeng/tooltip';
 import {FormsModule} from '@angular/forms';
 import {FavoriteDaysResponse, UserStatsService} from '../../../../../settings/user-management/user-stats.service';
 import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
+import {AsyncPipe} from '@angular/common';
 
 type FavoriteDaysChartData = ChartData<'bar', number[], string>;
 
 @Component({
   selector: 'app-favorite-days-chart',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective, Select, FormsModule, Tooltip, TranslocoDirective],
+  imports: [
+    AsyncPipe,BaseChartDirective, Select, FormsModule, Tooltip, TranslocoDirective],
   templateUrl: './favorite-days-chart.component.html',
   styleUrls: ['./favorite-days-chart.component.scss']
 })

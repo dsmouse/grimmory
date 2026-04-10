@@ -1,5 +1,4 @@
 import {Component, computed, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {BaseChartDirective} from 'ng2-charts';
 import {Tooltip} from 'primeng/tooltip';
 import {ChartConfiguration, ChartData, ScatterDataPoint} from 'chart.js';
@@ -36,7 +35,7 @@ interface RatingTasteMetrics {
 @Component({
   selector: 'app-rating-taste-chart',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective, Tooltip, TranslocoDirective],
+  imports: [BaseChartDirective, Tooltip, TranslocoDirective],
   templateUrl: './rating-taste-chart.component.html',
   styleUrls: ['./rating-taste-chart.component.scss']
 })

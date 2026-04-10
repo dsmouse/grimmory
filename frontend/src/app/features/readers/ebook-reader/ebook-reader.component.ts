@@ -1,5 +1,4 @@
 import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, DestroyRef, effect, HostListener, inject, OnInit, signal} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {from, Observable, of, Subject, throwError} from 'rxjs';
 import {catchError, map, switchMap, takeUntil, tap} from 'rxjs/operators';
 import {MessageService} from 'primeng/api';
@@ -39,7 +38,6 @@ import {WakeLockService} from '../../../shared/service/wake-lock.service';
   selector: 'app-ebook-reader',
   standalone: true,
   imports: [
-    CommonModule,
     ReaderHeaderComponent,
     ReaderSettingsDialogComponent,
     ReaderQuickSettingsComponent,

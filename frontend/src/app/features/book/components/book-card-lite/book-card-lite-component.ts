@@ -7,7 +7,7 @@ import {UserService} from '../../../settings/user-management/user.service';
 import {Router} from '@angular/router';
 import {NgClass} from '@angular/common';
 import {BookMetadataHostService} from '../../../../shared/service/book-metadata-host.service';
-import {TooltipModule} from 'primeng/tooltip';
+import {Tooltip} from 'primeng/tooltip';
 
 @Component({
   selector: 'app-book-card-lite-component',
@@ -15,7 +15,7 @@ import {TooltipModule} from 'primeng/tooltip';
   imports: [
     Button,
     NgClass,
-    TooltipModule,
+    Tooltip,
     CoverPlaceholderComponent
   ],
   templateUrl: './book-card-lite-component.html',

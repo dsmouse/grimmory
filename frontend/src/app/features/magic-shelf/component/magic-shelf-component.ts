@@ -15,14 +15,14 @@ import {MultiSelect} from 'primeng/multiselect';
 import {AutoComplete} from 'primeng/autocomplete';
 import {EMPTY_CHECK_OPERATORS, MULTI_VALUE_OPERATORS, RELATIVE_DATE_OPERATORS, parseValue, removeNulls, serializeDateRules} from '../service/magic-shelf-utils';
 import {IconPickerService, IconSelection} from '../../../shared/service/icon-picker.service';
-import {CheckboxChangeEvent, CheckboxModule} from "primeng/checkbox";
+import {CheckboxChangeEvent, Checkbox} from "primeng/checkbox";
 import {UserService} from "../../settings/user-management/user.service";
 import {IconDisplayComponent} from '../../../shared/components/icon-display/icon-display.component';
 import {Tooltip} from 'primeng/tooltip';
 import {BookService} from '../../book/service/book.service';
 import {ShelfService} from '../../book/service/shelf.service';
 import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
-import {TextareaModule} from 'primeng/textarea';
+import {Textarea} from 'primeng/textarea';
 
 export type RuleOperator =
   | 'equals'
@@ -238,11 +238,11 @@ const READ_STATUS_KEYS: Record<string, string> = {
     InputNumber,
     MultiSelect,
     AutoComplete,
-    CheckboxModule,
+    Checkbox,
     IconDisplayComponent,
     Tooltip,
     TranslocoDirective,
-    TextareaModule
+    Textarea
   ]
 })
 export class MagicShelfComponent implements OnInit {

@@ -1,5 +1,4 @@
 import {Component, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild, ElementRef, AfterViewInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {CbxPageSplitOption} from '../../../settings/user-management/user.service';
 
 export type CanvasSplitState = 'NO_SPLIT' | 'LEFT_PART' | 'RIGHT_PART';
@@ -14,7 +13,7 @@ export type CanvasSplitState = 'NO_SPLIT' | 'LEFT_PART' | 'RIGHT_PART';
 @Component({
   selector: 'app-canvas-renderer',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <canvas
       #canvas

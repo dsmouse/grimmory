@@ -1,5 +1,4 @@
 import {Component, computed, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {BaseChartDirective} from 'ng2-charts';
 import {ChartConfiguration, ChartData} from 'chart.js';
 import {Tooltip} from 'primeng/tooltip';
@@ -51,7 +50,7 @@ type RatingChartData = ChartData<'bar', number[], string>;
 @Component({
   selector: 'app-personal-rating-chart',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective, Tooltip, TranslocoDirective],
+  imports: [BaseChartDirective, Tooltip, TranslocoDirective],
   templateUrl: './personal-rating-chart.component.html',
   styleUrls: ['./personal-rating-chart.component.scss']
 })

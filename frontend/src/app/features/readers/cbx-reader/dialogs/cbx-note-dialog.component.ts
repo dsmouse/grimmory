@@ -1,5 +1,4 @@
 import {Component, EventEmitter, inject, Input, Output, OnChanges, SimpleChanges} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {TranslocoService, TranslocoPipe} from '@jsverse/transloco';
 import {ReaderIconComponent} from '../../ebook-reader/shared/icon.component';
@@ -19,7 +18,7 @@ export interface CbxNoteDialogResult {
 @Component({
   selector: 'app-cbx-note-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslocoPipe, ReaderIconComponent],
+  imports: [FormsModule, TranslocoPipe, ReaderIconComponent],
   templateUrl: './cbx-note-dialog.component.html',
   styleUrls: ['./cbx-note-dialog.component.scss']
 })

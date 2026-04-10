@@ -1,5 +1,4 @@
 import {Component, computed, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {BaseChartDirective} from 'ng2-charts';
 import {ChartConfiguration, ChartData} from 'chart.js';
 import {Tooltip} from 'primeng/tooltip';
@@ -30,7 +29,7 @@ type ReadingDNAChartData = ChartData<'radar', number[], string>;
 @Component({
   selector: 'app-reading-dna-chart',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective, Tooltip, TranslocoDirective],
+  imports: [BaseChartDirective, Tooltip, TranslocoDirective],
   templateUrl: './reading-dna-chart.component.html',
   styleUrls: ['./reading-dna-chart.component.scss']
 })

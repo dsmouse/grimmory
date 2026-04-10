@@ -1,4 +1,4 @@
-import {signal, type EnvironmentProviders, type Provider, type WritableSignal} from '@angular/core';
+import {ApplicationRef, provideZonelessChangeDetection, signal, type EnvironmentProviders, type Provider, type WritableSignal} from '@angular/core';
 import {provideHttpClient} from '@angular/common/http';
 import {provideHttpClientTesting} from '@angular/common/http/testing';
 import {TestBed} from '@angular/core/testing';
@@ -28,6 +28,7 @@ export function createQueryClientHarness(): QueryClientHarness {
   return {
     queryClient,
     providers: [
+      provideZonelessChangeDetection(),
       provideHttpClient(),
       provideHttpClientTesting(),
       provideTanStackQuery(queryClient),
@@ -37,4 +38,23 @@ export function createQueryClientHarness(): QueryClientHarness {
 
 export function flushSignalAndQueryEffects(): void {
   TestBed.flushEffects();
+}
+
+/**
+ * Asynchronously flushes Angular effects and query state across multiple rounds.
+ * Use this for tests involving async operations like HTTP requests or timers.
+ * For synchronous signal/effect flushing, use `flushSignalAndQueryEffects()` instead.
+ *
+ * @param rounds Number of cycles to await macrotask and microtask resolutions. Defaults to 5.
+ */
+export async function flushQueryAsync(rounds = 5): Promise<void> {
+  const appRef = TestBed.inject(ApplicationRef);
+  for (let i = 0; i < rounds; i++) {
+    TestBed.flushEffects();
+    appRef.tick();
+    await Promise.resolve();
+    await new Promise(resolve => setTimeout(resolve, 0));
+  }
+  TestBed.flushEffects();
+  appRef.tick();
 }

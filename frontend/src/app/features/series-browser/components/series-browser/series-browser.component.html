@@ -77,14 +77,10 @@
           <p>{{ t('noSeriesFound') }}</p>
         </div>
       } @else {
-        <virtual-scroller
-          #scroll
-          [items]="seriesList"
-          class="virtual-scroller">
-          <div class="series-grid"
-            #container
-            [ngStyle]="{'grid-template-columns': 'repeat(auto-fill, minmax(' + gridColumnMinWidth + ', 1fr))'}">
-            @for (series of scroll.viewPortItems; track series.seriesName) {
+        <cdk-virtual-scroll-viewport autosize [minBufferPx]="600" [maxBufferPx]="1200" class="virtual-scroller">
+          <div *cdkVirtualFor="let row of seriesRows(); let rowIdx = index" class="series-grid"
+            [ngStyle]="{'grid-template-columns': 'repeat(' + gridColumns() + ', 1fr)'}">
+            @for (series of row; track series.seriesName) {
               <div class="virtual-scroller-item"
                 [ngStyle]="{width: cardWidth + 'px', height: cardHeight + 'px'}"
                 [style.--card-scale]="seriesScaleService.scaleFactor()">
@@ -95,7 +91,7 @@
               </div>
             }
           </div>
-        </virtual-scroller>
+        </cdk-virtual-scroll-viewport>
       }
     }
   }

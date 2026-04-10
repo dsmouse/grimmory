@@ -1,5 +1,4 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { TranslocoService, TranslocoPipe } from '@jsverse/transloco';
 import {
   CbxFitMode,
@@ -18,7 +17,7 @@ import { CbxQuickSettingsService } from './cbx-quick-settings.service';
 @Component({
   selector: 'app-cbx-quick-settings',
   standalone: true,
-  imports: [CommonModule, TranslocoPipe, ReaderIconComponent],
+  imports: [TranslocoPipe, ReaderIconComponent],
   templateUrl: './cbx-quick-settings.component.html',
   styleUrls: ['./cbx-quick-settings.component.scss']
 })

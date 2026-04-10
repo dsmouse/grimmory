@@ -1,5 +1,4 @@
 import {Component, effect, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {BaseChartDirective} from 'ng2-charts';
 import {Tooltip} from 'primeng/tooltip';
 import {ChartConfiguration, ChartData} from 'chart.js';
@@ -9,7 +8,7 @@ import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
 @Component({
   selector: 'app-reading-debt-chart',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective, Tooltip, TranslocoDirective],
+  imports: [BaseChartDirective, Tooltip, TranslocoDirective],
   templateUrl: './reading-debt-chart.component.html',
   styleUrls: ['./reading-debt-chart.component.scss']
 })

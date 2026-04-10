@@ -1,5 +1,4 @@
 import {Component, EventEmitter, Input, Output, OnChanges, SimpleChanges} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {TranslocoDirective, TranslocoPipe} from '@jsverse/transloco';
 import {ReaderIconComponent} from '../shared/icon.component';
@@ -21,7 +20,7 @@ export interface NoteDialogResult {
 @Component({
   selector: 'app-reader-note-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslocoDirective, TranslocoPipe, ReaderIconComponent],
+  imports: [FormsModule, TranslocoDirective, TranslocoPipe, ReaderIconComponent],
   templateUrl: './note-dialog.component.html',
   styleUrls: ['./note-dialog.component.scss']
 })

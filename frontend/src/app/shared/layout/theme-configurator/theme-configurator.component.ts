@@ -1,15 +1,13 @@
-import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, computed, effect, inject} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {ButtonModule} from 'primeng/button';
-import {RadioButtonModule} from 'primeng/radiobutton';
-import {ToggleSwitchModule} from 'primeng/toggleswitch';
+
 
 import Aura from '../theme-palette-extend';
 
 import {AppConfigService} from '../../service/app-config.service';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {FaviconService} from './favicon-service';
+import {NgClass} from '@angular/common';
 
 type ColorPalette = Record<string, string>;
 
@@ -27,11 +25,8 @@ interface Palette {
     class: 'config-panel hidden'
   },
   imports: [
-    CommonModule,
+    NgClass,
     FormsModule,
-    ButtonModule,
-    RadioButtonModule,
-    ToggleSwitchModule,
     TranslocoDirective
   ]
 })

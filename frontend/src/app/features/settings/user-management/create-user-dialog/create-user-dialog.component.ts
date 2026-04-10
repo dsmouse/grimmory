@@ -1,8 +1,9 @@
-import {Component, inject, OnInit} from '@angular/core';
+import {Component, DestroyRef, inject, OnInit} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {InputText} from 'primeng/inputtext';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Checkbox} from 'primeng/checkbox';
-import {MultiSelectModule} from 'primeng/multiselect';
+import {MultiSelect} from 'primeng/multiselect';
 import {Library} from '../../../book/model/library.model';
 import {Button} from 'primeng/button';
 import {LibraryService} from '../../../book/service/library.service';
@@ -21,7 +22,7 @@ import {TranslocoDirective, TranslocoPipe, TranslocoService} from '@jsverse/tran
     ReactiveFormsModule,
     FormsModule,
     Checkbox,
-    MultiSelectModule,
+    MultiSelect,
     Button,
     TranslocoDirective,
     TranslocoPipe
@@ -38,6 +39,7 @@ export class CreateUserDialogComponent implements OnInit {
   private messageService = inject(MessageService);
   private ref = inject(DynamicDialogRef);
   private t = inject(TranslocoService);
+  private destroyRef = inject(DestroyRef);
 
   get libraries(): Library[] {
     return this.libraryService.libraries();
@@ -81,7 +83,9 @@ export class CreateUserDialogComponent implements OnInit {
       permissionBulkResetBookReadStatus: [false],
     }, {validators: [passwordMatchValidator('password', 'confirmPassword')]});
 
-    this.userForm.get('permissionAdmin')?.valueChanges.subscribe((isAdmin: boolean) => {
+    this.userForm.get('permissionAdmin')?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((isAdmin: boolean) => {
       const controls = this.userForm.controls;
       Object.keys(controls).forEach(key => {
         if (key !== 'permissionAdmin' && key.startsWith('permission')) {

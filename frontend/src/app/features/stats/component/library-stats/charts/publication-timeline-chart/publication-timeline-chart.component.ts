@@ -1,5 +1,4 @@
 import {Component, computed, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {BaseChartDirective} from 'ng2-charts';
 import {ChartConfiguration, ChartData} from 'chart.js';
 import {LibraryFilterService} from '../../service/library-filter.service';
@@ -52,7 +51,7 @@ const DECADE_COLORS: Record<string, string> = {
 @Component({
   selector: 'app-publication-timeline-chart',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective, TranslocoDirective],
+  imports: [BaseChartDirective, TranslocoDirective],
   templateUrl: './publication-timeline-chart.component.html',
   styleUrls: ['./publication-timeline-chart.component.scss']
 })

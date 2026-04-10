@@ -1,5 +1,4 @@
 import {Component, EventEmitter, inject, Input, Output} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
 import {Book} from '../../../book/model/book.model';
 import {UrlHelperService} from '../../../../shared/service/url-helper.service';
@@ -8,7 +7,7 @@ import {CoverPlaceholderComponent} from '../../../../shared/components/cover-gen
 @Component({
   selector: 'app-reader-book-metadata-dialog',
   standalone: true,
-  imports: [CommonModule, TranslocoDirective, CoverPlaceholderComponent],
+  imports: [TranslocoDirective, CoverPlaceholderComponent],
   templateUrl: './metadata-dialog.component.html',
   styleUrls: ['./metadata-dialog.component.scss']
 })

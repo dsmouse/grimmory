@@ -3,7 +3,7 @@ import {toObservable, toSignal} from '@angular/core/rxjs-interop';
 import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
 import {Book} from '../../model/book.model';
 import {FormsModule} from '@angular/forms';
-import {InputTextModule} from 'primeng/inputtext';
+import {InputText} from 'primeng/inputtext';
 import {BookService} from '../../service/book.service';
 import {Button} from 'primeng/button';
 import {SlicePipe} from '@angular/common';
@@ -22,7 +22,7 @@ import {Popover} from 'primeng/popover';
   templateUrl: './book-searcher.component.html',
   imports: [
     FormsModule,
-    InputTextModule,
+    InputText,
     Button,
     SlicePipe,
     Skeleton,

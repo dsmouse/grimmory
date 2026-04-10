@@ -1,3 +1,4 @@
+import {signal} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {Router} from '@angular/router';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
@@ -16,7 +17,10 @@ describe('BookCardLiteComponent', () => {
     getThumbnailUrl: ReturnType<typeof vi.fn>;
     getAudiobookThumbnailUrl: ReturnType<typeof vi.fn>;
   };
-  let userService: {currentUser: ReturnType<typeof vi.fn>};
+  let userService: {
+    currentUser: ReturnType<typeof signal<unknown>>;
+    getCurrentUser: ReturnType<typeof vi.fn>;
+  };
   let hostService: {requestBookSwitch: ReturnType<typeof vi.fn>};
 
   beforeEach(async () => {
@@ -25,8 +29,10 @@ describe('BookCardLiteComponent', () => {
       getThumbnailUrl: vi.fn(() => '/covers/1'),
       getAudiobookThumbnailUrl: vi.fn(() => '/covers/audio/1'),
     };
+    const currentUser = signal<unknown>({userSettings: {metadataCenterViewMode: 'route'}});
     userService = {
-      currentUser: vi.fn(() => ({userSettings: {metadataCenterViewMode: 'route'}})),
+      currentUser,
+      getCurrentUser: vi.fn(() => currentUser()),
     };
     hostService = {
       requestBookSwitch: vi.fn(),
@@ -84,7 +90,7 @@ describe('BookCardLiteComponent', () => {
   });
 
   it('delegates to the metadata host when the user prefers dialog mode', () => {
-    userService.currentUser.mockReturnValue({userSettings: {metadataCenterViewMode: 'dialog'}});
+    userService.currentUser.set({userSettings: {metadataCenterViewMode: 'dialog'}});
     const book = buildBook();
 
     component.openBookInfo(book);

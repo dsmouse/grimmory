@@ -10,7 +10,7 @@ import {ShelfService} from '../../../book/service/shelf.service';
 import {MagicShelfService} from '../../../magic-shelf/service/magic-shelf.service';
 import {Subject} from 'rxjs';
 import {FormsModule} from '@angular/forms';
-import {ToastModule} from 'primeng/toast';
+
 import {Tooltip} from 'primeng/tooltip';
 import {takeUntil} from 'rxjs/operators';
 import {ToggleSwitch} from 'primeng/toggleswitch';
@@ -28,7 +28,6 @@ import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from 
     FormsModule,
     Button,
     TableModule,
-    ToastModule,
     Tooltip,
     ToggleSwitch,
     TranslocoDirective,

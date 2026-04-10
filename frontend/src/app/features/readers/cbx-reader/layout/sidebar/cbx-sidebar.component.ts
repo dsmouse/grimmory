@@ -1,5 +1,5 @@
 import {Component, DestroyRef, effect, inject, signal} from '@angular/core';
-import {CommonModule, DatePipe} from '@angular/common';
+import {DatePipe} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {TranslocoPipe} from '@jsverse/transloco';
 import {CbxSidebarService, CbxSidebarTab} from './cbx-sidebar.service';
@@ -12,7 +12,7 @@ import {CoverPlaceholderComponent} from '../../../../../shared/components/cover-
   standalone: true,
   templateUrl: './cbx-sidebar.component.html',
   styleUrls: ['./cbx-sidebar.component.scss'],
-  imports: [CommonModule, FormsModule, TranslocoPipe, ReaderIconComponent, DatePipe, CoverPlaceholderComponent]
+  imports: [FormsModule, TranslocoPipe, ReaderIconComponent, DatePipe, CoverPlaceholderComponent]
 })
 export class CbxSidebarComponent {
   private readonly sidebarService = inject(CbxSidebarService);

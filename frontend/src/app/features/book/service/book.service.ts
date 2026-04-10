@@ -103,7 +103,7 @@ export class BookService {
     return queryOptions({
       queryKey: BOOKS_QUERY_KEY,
       queryFn: () => lastValueFrom(this.http.get<Book[]>(this.url, {params: {stripForListView: false}})),
-      staleTime: 30_000,
+      staleTime: 5 * 60_000,
     });
   }
 

@@ -5,7 +5,7 @@ import {TranslocoService} from '@jsverse/transloco';
 import {MessageService} from 'primeng/api';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
-import {createAuthServiceStub, createQueryClientHarness, flushSignalAndQueryEffects} from '../../../core/testing/query-testing';
+import {createAuthServiceStub, createQueryClientHarness, flushSignalAndQueryEffects, flushQueryAsync} from '../../../core/testing/query-testing';
 import type {Book, BookMetadata} from '../model/book.model';
 import type {Shelf} from '../model/shelf.model';
 import {AuthService} from '../../../shared/service/auth.service';
@@ -46,12 +46,7 @@ function buildBook(id: number, overrides: BuildBookOverrides = {}): Book {
 }
 
 async function flushBooksQuery(): Promise<void> {
-  await Promise.resolve();
-  flushSignalAndQueryEffects();
-  await new Promise(resolve => setTimeout(resolve, 0));
-  flushSignalAndQueryEffects();
-  await Promise.resolve();
-  flushSignalAndQueryEffects();
+  await flushQueryAsync();
 }
 
 describe('BookService', () => {

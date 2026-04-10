@@ -1,5 +1,4 @@
 import {Component, computed, effect, inject, OnInit, signal, ViewChild} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 import {FetchedProposal, MetadataTaskService} from '../../../book/service/metadata-task';
 import {BookService} from '../../../book/service/book.service';
@@ -11,13 +10,15 @@ import {ProgressBar} from 'primeng/progressbar';
 import {Tooltip} from 'primeng/tooltip';
 import {MetadataProgressService} from '../../../../shared/service/metadata-progress.service';
 import {MetadataPickerComponent} from '../book-metadata-center/metadata-picker/metadata-picker.component';
+import {DecimalPipe} from '@angular/common';
 
 @Component({
   selector: 'app-metadata-review-dialog-component',
   standalone: true,
   templateUrl: './metadata-review-dialog-component.html',
   styleUrls: ['./metadata-review-dialog-component.scss'],
-  imports: [CommonModule, MetadataPickerComponent, ProgressSpinner, Button, Divider, ProgressBar, Tooltip],
+  imports: [
+    DecimalPipe,MetadataPickerComponent, ProgressSpinner, Button, Divider, ProgressBar, Tooltip],
 })
 export class MetadataReviewDialogComponent implements OnInit {
 

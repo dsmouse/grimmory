@@ -1,5 +1,4 @@
 import {Component, computed, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {CdkDragDrop, DragDropModule, moveItemInArray} from '@angular/cdk/drag-drop';
 import {Select} from 'primeng/select';
@@ -30,7 +29,6 @@ interface ChartConfig {
   selector: 'app-library-stats',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     Select,
     DragDropModule,

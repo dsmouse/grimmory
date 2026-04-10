@@ -1,5 +1,6 @@
-import {Component, inject, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import {Component, DestroyRef, inject, OnInit} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {take} from 'rxjs/operators';
 import {Button} from 'primeng/button';
 import {MessageService} from 'primeng/api';
 import {CustomFontService} from '../../../shared/service/custom-font.service';
@@ -12,11 +13,13 @@ import {FontUploadDialogComponent} from './font-upload-dialog/font-upload-dialog
 import {Skeleton} from 'primeng/skeleton';
 import {DialogSize, DialogStyle} from '../../../shared/services/dialog-launcher.service';
 import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
+import {DatePipe} from '@angular/common';
 
 @Component({
   selector: 'app-custom-fonts',
   standalone: true,
-  imports: [CommonModule, Button, ConfirmDialog, Tooltip, Skeleton, TranslocoDirective],
+  imports: [
+    DatePipe,Button, ConfirmDialog, Tooltip, Skeleton, TranslocoDirective],
   templateUrl: './custom-fonts.component.html',
   styleUrls: ['./custom-fonts.component.scss'],
   providers: [ConfirmationService, DialogService]
@@ -34,6 +37,7 @@ export class CustomFontsComponent implements OnInit {
   private confirmationService = inject(ConfirmationService);
   private dialogService = inject(DialogService);
   private t = inject(TranslocoService);
+  private destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
     this.loadFonts();
@@ -82,7 +86,7 @@ export class CustomFontsComponent implements OnInit {
     });
 
     if (this.uploadDialogRef) {
-      this.uploadDialogRef.onClose.subscribe((font: CustomFont | null) => {
+      this.uploadDialogRef.onClose.pipe(take(1), takeUntilDestroyed(this.destroyRef)).subscribe((font: CustomFont | null) => {
         if (font) {
           this.customFonts.push(font);
         }

@@ -4,14 +4,14 @@ import {TranslocoDirective} from '@jsverse/transloco';
 import {clampStripMaxWidthPercent} from '../../../readers/cbx-reader/core/cbx-reader-storage';
 import {CbxBackgroundColor, CbxFitMode, CbxPageSpread, CbxPageViewMode, CbxScrollMode, UserSettings} from '../../user-management/user.service';
 import {ReaderPreferencesService} from '../reader-preferences.service';
-import {TooltipModule} from 'primeng/tooltip';
+import {Tooltip} from 'primeng/tooltip';
 
 @Component({
   selector: 'app-cbx-reader-preferences-component',
   imports: [
     FormsModule,
     TranslocoDirective,
-    TooltipModule
+    Tooltip
   ],
   templateUrl: './cbx-reader-preferences-component.html',
   styleUrl: './cbx-reader-preferences-component.scss'

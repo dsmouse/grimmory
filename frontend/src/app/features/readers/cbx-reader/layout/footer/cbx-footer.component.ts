@@ -1,5 +1,4 @@
 import {Component, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {TranslocoService, TranslocoPipe} from '@jsverse/transloco';
 import {Book} from '../../../../book/model/book.model';
@@ -9,7 +8,7 @@ import {CbxFooterService} from './cbx-footer.service';
 @Component({
   selector: 'app-cbx-footer',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslocoPipe, ReaderIconComponent],
+  imports: [FormsModule, TranslocoPipe, ReaderIconComponent],
   templateUrl: './cbx-footer.component.html',
   styleUrls: ['./cbx-footer.component.scss']
 })

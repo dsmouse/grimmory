@@ -40,7 +40,7 @@ export class AppBooksApiService {
     getNextPageParam: (lastPage: AppPageResponse<AppBookSummary>) =>
       lastPage.hasNext ? lastPage.page + 1 : undefined,
     enabled: !!this.token(),
-    staleTime: 30_000,
+    staleTime: 5 * 60_000,
   }));
 
   readonly filterOptionsQuery = injectQuery(() => ({
@@ -54,7 +54,7 @@ export class AppBooksApiService {
       return lastValueFrom(this.http.get<AppFilterOptions>(this.filterOptionsUrl, {params}));
     },
     enabled: !!this.token(),
-    staleTime: 60_000,
+    staleTime: 10 * 60_000,
   }));
 
   /** Accumulated books from all loaded pages, mapped to the Book interface. */

@@ -1,9 +1,10 @@
-import { Component, effect, inject, OnDestroy, ViewChild } from '@angular/core';
+import { Component, DestroyRef, effect, inject, OnDestroy, ViewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LayoutService } from '../layout.service';
 import { Router, RouterLink } from '@angular/router';
-import { TooltipModule } from 'primeng/tooltip';
+import { Tooltip } from 'primeng/tooltip';
 import { FormsModule } from '@angular/forms';
-import { InputTextModule } from 'primeng/inputtext';
+
 import { BookSearcherComponent } from '../../../features/book/components/book-searcher/book-searcher.component';
 import { NgClass, NgStyle } from '@angular/common';
 import { NotificationEventService } from '../../websocket/notification-event.service';
@@ -14,8 +15,7 @@ import { AuthService } from '../../service/auth.service';
 import { UserService } from '../../../features/settings/user-management/user.service';
 import { Popover } from 'primeng/popover';
 import { MetadataProgressService } from '../../service/metadata-progress.service';
-import { takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
+
 import { MetadataBatchProgressNotification } from '../../model/metadata-batch-progress.model';
 import { BookdropFileService } from '../../../features/bookdrop/service/bookdrop-file.service';
 import { DialogLauncherService } from '../../services/dialog-launcher.service';
@@ -33,9 +33,8 @@ import type { MenuItem } from 'primeng/api';
   styleUrls: ['./app.topbar.component.scss'],
   imports: [
     RouterLink,
-    TooltipModule,
+    Tooltip,
     FormsModule,
-    InputTextModule,
     BookSearcherComponent,
     ThemeConfiguratorComponent,
     StyleClass,
@@ -71,7 +70,7 @@ export class AppTopBarComponent implements OnDestroy {
   hasPendingBookdropFiles = false;
 
   private eventTimer: number | undefined;
-  private destroy$ = new Subject<void>();
+  private readonly destroyRef = inject(DestroyRef);
 
   private latestTasks: Record<string, MetadataBatchProgressNotification> = {};
   private latestHasPendingFiles = false;
@@ -87,7 +86,7 @@ export class AppTopBarComponent implements OnDestroy {
     this.subscribeToNotifications();
 
     this.metadataProgressService.activeTasks$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((tasks) => {
         this.latestTasks = tasks;
         this.hasAnyTasks = Object.keys(tasks).length > 0;
@@ -96,7 +95,7 @@ export class AppTopBarComponent implements OnDestroy {
       });
 
     this.bookdropFileService.hasPendingFiles$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((hasPending) => {
         this.latestHasPendingFiles = hasPending;
         this.hasPendingBookdropFiles = hasPending;
@@ -110,7 +109,7 @@ export class AppTopBarComponent implements OnDestroy {
     });
 
     this.translocoService.langChanges$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         this.initializeStatsMenu();
       });
@@ -118,8 +117,6 @@ export class AppTopBarComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     clearTimeout(this.eventTimer);
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   toggleMenu() {
@@ -185,7 +182,7 @@ export class AppTopBarComponent implements OnDestroy {
 
   private subscribeToMetadataProgress() {
     this.metadataProgressService.progressUpdates$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((progress) => {
         this.progressHighlight = progress.status === 'IN_PROGRESS';
       });
@@ -193,7 +190,7 @@ export class AppTopBarComponent implements OnDestroy {
 
   private subscribeToNotifications() {
     this.notificationService.latestNotification$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((notification: LogNotification) => {
         this.latestNotificationSeverity = notification.severity;
         this.triggerPulseEffect();

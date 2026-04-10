@@ -1,5 +1,4 @@
 import {Component, computed, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {BaseChartDirective} from 'ng2-charts';
 import {Tooltip} from 'primeng/tooltip';
 import {ChartConfiguration, ChartData} from 'chart.js';
@@ -23,7 +22,7 @@ const THRESHOLDS = [0, 10, 25, 50, 75, 90, 100];
 @Component({
   selector: 'app-reading-survival-chart',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective, Tooltip, TranslocoDirective],
+  imports: [BaseChartDirective, Tooltip, TranslocoDirective],
   templateUrl: './reading-survival-chart.component.html',
   styleUrls: ['./reading-survival-chart.component.scss']
 })

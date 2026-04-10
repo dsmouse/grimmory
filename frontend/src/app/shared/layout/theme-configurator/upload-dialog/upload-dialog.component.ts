@@ -1,11 +1,10 @@
 import {Component, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {DynamicDialogRef} from 'primeng/dynamicdialog';
-import {ButtonModule} from 'primeng/button';
-import {InputTextModule} from 'primeng/inputtext';
-import {DividerModule} from 'primeng/divider';
-import {MessageModule} from 'primeng/message';
+import {Button} from 'primeng/button';
+import {InputText} from 'primeng/inputtext';
+import {Divider} from 'primeng/divider';
+import {Message} from 'primeng/message';
 import {BackgroundUploadService} from '../background-upload.service';
 import {take} from 'rxjs';
 import {TranslocoDirective, TranslocoPipe, TranslocoService} from '@jsverse/transloco';
@@ -16,12 +15,11 @@ import {TranslocoDirective, TranslocoPipe, TranslocoService} from '@jsverse/tran
   templateUrl: './upload-dialog.component.html',
   styleUrls: ['./upload-dialog.component.scss'],
   imports: [
-    CommonModule,
     FormsModule,
-    ButtonModule,
-    InputTextModule,
-    DividerModule,
-    MessageModule,
+    Button,
+    InputText,
+    Divider,
+    Message,
     TranslocoDirective,
     TranslocoPipe
   ]

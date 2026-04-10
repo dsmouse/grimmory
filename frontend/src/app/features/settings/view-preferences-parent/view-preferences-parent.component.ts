@@ -1,7 +1,7 @@
 import {Component, inject, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {TableModule} from 'primeng/table';
-import {ToastModule} from 'primeng/toast';
+
 import {ViewPreferencesComponent} from './view-preferences/view-preferences.component';
 import {SidebarSortingPreferencesComponent} from './sidebar-sorting-preferences/sidebar-sorting-preferences.component';
 import {MetaCenterViewModeComponent} from './meta-center-view-mode/meta-center-view-mode-component';
@@ -17,7 +17,6 @@ import {LocalStorageService} from '../../../shared/service/local-storage.service
   imports: [
     FormsModule,
     TableModule,
-    ToastModule,
     ViewPreferencesComponent,
     SidebarSortingPreferencesComponent,
     MetaCenterViewModeComponent,

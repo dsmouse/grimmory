@@ -1,7 +1,7 @@
 import {Component, effect, inject} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 
-import {TooltipModule} from 'primeng/tooltip';
+
 import {TranslocoDirective} from '@jsverse/transloco';
 import {UserService, UserSettings} from '../user-management/user.service';
 import {EpubReaderPreferencesComponent} from './epub-reader-preferences/epub-reader-preferences-component';
@@ -16,7 +16,7 @@ import {LocalSettingsComponent} from "./local-settings/local-settings.component"
   templateUrl: './reader-preferences.component.html',
   standalone: true,
   styleUrls: ['./reader-preferences.component.scss'],
-  imports: [FormsModule, TooltipModule, TranslocoDirective, EpubReaderPreferencesComponent, PdfReaderPreferencesComponent, CbxReaderPreferencesComponent, CustomFontsComponent, SettingsApplicationModeComponent, LocalSettingsComponent]
+  imports: [FormsModule, TranslocoDirective, EpubReaderPreferencesComponent, PdfReaderPreferencesComponent, CbxReaderPreferencesComponent, CustomFontsComponent, SettingsApplicationModeComponent, LocalSettingsComponent]
 })
 export class ReaderPreferences {
   private readonly userService = inject(UserService);

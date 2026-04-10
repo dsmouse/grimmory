@@ -1,5 +1,4 @@
 import {Component, effect, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {BaseChartDirective} from 'ng2-charts';
 import {Tooltip} from 'primeng/tooltip';
 import {BehaviorSubject, Observable} from 'rxjs';
@@ -8,6 +7,7 @@ import {BookService} from '../../../../../book/service/book.service';
 import {Book, ReadStatus} from '../../../../../book/model/book.model';
 import {LibraryFilterService} from '../../../library-stats/service/library-filter.service';
 import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
+import {AsyncPipe} from '@angular/common';
 
 interface SeriesInfo {
   name: string;
@@ -42,7 +42,8 @@ type SeriesChartData = ChartData<'bar', number[], string>;
 @Component({
   selector: 'app-series-progress-chart',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective, Tooltip, TranslocoDirective],
+  imports: [
+    AsyncPipe,BaseChartDirective, Tooltip, TranslocoDirective],
   templateUrl: './series-progress-chart.component.html',
   styleUrls: ['./series-progress-chart.component.scss']
 })

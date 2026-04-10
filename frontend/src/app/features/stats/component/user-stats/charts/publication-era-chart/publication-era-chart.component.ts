@@ -1,5 +1,4 @@
 import {Component, effect, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {BaseChartDirective} from 'ng2-charts';
 import {Tooltip} from 'primeng/tooltip';
 import {ChartConfiguration, ChartData} from 'chart.js';
@@ -10,7 +9,7 @@ import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
 @Component({
   selector: 'app-publication-era-chart',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective, Tooltip, TranslocoDirective],
+  imports: [BaseChartDirective, Tooltip, TranslocoDirective],
   templateUrl: './publication-era-chart.component.html',
   styleUrls: ['./publication-era-chart.component.scss']
 })

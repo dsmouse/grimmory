@@ -487,9 +487,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/cdk@npm:^21.2.5":
-  version: 21.2.5
-  resolution: "@angular/cdk@npm:21.2.5"
+"@angular/cdk-experimental@npm:^21.2.5":
+  version: 21.2.6
+  resolution: "@angular/cdk-experimental@npm:21.2.6"
+  dependencies:
+    tslib: "npm:^2.3.0"
+  peerDependencies:
+    "@angular/cdk": 21.2.6
+    "@angular/core": ^21.0.0 || ^22.0.0
+  checksum: 10c0/602ed2a80238ee75b2fa01ee98d906056881b3bb8b70c30ce1c5712611f0a4cbf617abcad5e237da74788023d3f5676987e7eeb47b9a0ed2bde43e99aa3cb1df
+  languageName: node
+  linkType: hard
+
+"@angular/cdk@npm:^21.2.6":
+  version: 21.2.6
+  resolution: "@angular/cdk@npm:21.2.6"
   dependencies:
     parse5: "npm:^8.0.0"
     tslib: "npm:^2.3.0"
@@ -498,7 +510,7 @@ __metadata:
     "@angular/core": ^21.0.0 || ^22.0.0
     "@angular/platform-browser": ^21.0.0 || ^22.0.0
     rxjs: ^6.5.3 || ^7.4.0
-  checksum: 10c0/62f0aaa823f9cf6bc02349c388849aa96b208baf4f5dafd9cf83105cd562698061e1c4a4239e04b28e426317743629e154e57509f2034b2afcb8c52fc07f3295
+  checksum: 10c0/ca74b69ee5d3baac51892b44fbd7cd03cb6e6925502ff22ed62c6388f665de9ffbdedfad8c215407c439a440f00124c3ae7915654dcbbf5b73cb66a0af0840d5
   languageName: node
   linkType: hard
 
@@ -2194,17 +2206,6 @@ __metadata:
   version: 0.4.3
   resolution: "@humanwhocodes/retry@npm:0.4.3"
   checksum: 10c0/3775bb30087d4440b3f7406d5a057777d90e4b9f435af488a4923ef249e93615fb78565a85f173a186a076c7706a81d0d57d563a2624e4de2c5c9c66c486ce42
-  languageName: node
-  linkType: hard
-
-"@iharbeck/ngx-virtual-scroller@npm:^20.0.0":
-  version: 20.0.0
-  resolution: "@iharbeck/ngx-virtual-scroller@npm:20.0.0"
-  dependencies:
-    tslib: "npm:^2.3.0"
-  peerDependencies:
-    "@tweenjs/tween.js": ^25.0.0
-  checksum: 10c0/fe5fca04ed52b4719966e8b3c20cde05d68171fc53f5d1f1eff3ba85eb3f6363f7aa9fce2453be5239739abfc6922f98b6b3cf6c35b228e745871ad0d9bac4f7
   languageName: node
   linkType: hard
 
@@ -6151,7 +6152,8 @@ __metadata:
     "@angular-devkit/schematics": "npm:21.2.6"
     "@angular/animations": "npm:^21.2.7"
     "@angular/build": "npm:^21.2.6"
-    "@angular/cdk": "npm:^21.2.5"
+    "@angular/cdk": "npm:^21.2.6"
+    "@angular/cdk-experimental": "npm:^21.2.5"
     "@angular/cli": "npm:^21.2.6"
     "@angular/common": "npm:^21.2.7"
     "@angular/compiler": "npm:^21.2.7"
@@ -6165,7 +6167,6 @@ __metadata:
     "@embedpdf/pdfium": "npm:2.14.0"
     "@embedpdf/snippet": "npm:2.14.0"
     "@eslint/js": "npm:^10.0.1"
-    "@iharbeck/ngx-virtual-scroller": "npm:^20.0.0"
     "@jsverse/transloco": "npm:^8.2.1"
     "@playwright/test": "npm:^1.59.1"
     "@primeuix/themes": "npm:^2.0.3"
@@ -6211,7 +6212,6 @@ __metadata:
     vitest: "npm:^4.1.2"
     vitest-canvas-mock: "npm:^1.1.4"
     ws: "npm:^8.20.0"
-    zone.js: "npm:^0.16.1"
   languageName: unknown
   linkType: soft
 
@@ -9890,12 +9890,5 @@ __metadata:
   version: 4.3.6
   resolution: "zod@npm:4.3.6"
   checksum: 10c0/860d25a81ab41d33aa25f8d0d07b091a04acb426e605f396227a796e9e800c44723ed96d0f53a512b57be3d1520f45bf69c0cb3b378a232a00787a2609625307
-  languageName: node
-  linkType: hard
-
-"zone.js@npm:^0.16.1":
-  version: 0.16.1
-  resolution: "zone.js@npm:0.16.1"
-  checksum: 10c0/6f3638310e89697b0a21a4e7282b2505f26fb32dabb6ca1f09b721279e8512436efff199db0c7e3c7b7d11400dd42c88fa5cffc85984db56b9ac497a0050fe11
   languageName: node
   linkType: hard

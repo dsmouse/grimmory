@@ -3,14 +3,14 @@ import {FormsModule} from '@angular/forms';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {ReaderPreferencesService} from '../reader-preferences.service';
 import {PageSpread, UserSettings} from '../../user-management/user.service';
-import {TooltipModule} from 'primeng/tooltip';
+import {Tooltip} from 'primeng/tooltip';
 
 @Component({
   selector: 'app-pdf-reader-preferences-component',
   imports: [
     FormsModule,
     TranslocoDirective,
-    TooltipModule
+    Tooltip
   ],
   templateUrl: './pdf-reader-preferences-component.html',
   styleUrl: './pdf-reader-preferences-component.scss'

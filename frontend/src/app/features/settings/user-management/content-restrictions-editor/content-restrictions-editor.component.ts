@@ -1,5 +1,4 @@
 import {Component, computed, EventEmitter, inject, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {Button} from 'primeng/button';
 import {Select} from 'primeng/select';
@@ -20,7 +19,6 @@ import {TranslocoDirective, TranslocoPipe, TranslocoService} from '@jsverse/tran
   selector: 'app-content-restrictions-editor',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     Button,
     Select,

@@ -1,6 +1,5 @@
 import { Component, effect, ElementRef, HostListener, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
 import { forkJoin, from, Subject } from 'rxjs';
 import { debounceTime, map, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { PageTitleService } from "../../../shared/service/page-title.service";
@@ -45,7 +44,6 @@ import {
   selector: 'app-cbx-reader',
   standalone: true,
   imports: [
-    CommonModule,
     ProgressSpinner,
     FormsModule,
     TranslocoPipe,

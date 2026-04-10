@@ -47,7 +47,7 @@
             }
           </button>
 
-          @if (!isMobile) {
+          @if (!isMobile()) {
             <button class="display-settings-btn" (click)="displaySettingsPopover.toggle($event)">
               <i class="pi pi-sliders-h"></i>
             </button>
@@ -193,21 +193,20 @@
           <p>{{ t('noAuthorsFound') }}</p>
         </div>
       } @else {
-        <virtual-scroller
+        <cdk-virtual-scroll-viewport autosize
+          [minBufferPx]="600" [maxBufferPx]="1200"
           #scroll
-          [items]="authorList"
-          [bufferAmount]="16"
           class="virtual-scroller">
           <div class="author-grid"
-            #container
-            [ngStyle]="{'grid-template-columns': 'repeat(auto-fill, minmax(' + gridColumnMinWidth + ', 1fr))'}">
-            @for (author of scroll.viewPortItems; track author.id; let i = $index) {
+            *cdkVirtualFor="let row of authorRows(); let rowIndex = index"
+            [ngStyle]="{'grid-template-columns': 'repeat(' + gridColumns() + ', 1fr)'}">
+            @for (author of row; track author.id; let colIdx = $index) {
               <div class="virtual-scroller-item"
-                [ngStyle]="{width: cardWidth + 'px', height: cardHeight + 'px'}"
+                [ngStyle]="{width: cardWidth() + 'px', height: cardHeight() + 'px'}"
                 [style.--card-scale]="authorScaleService.scaleFactor()">
                 <app-author-card
                   [author]="author"
-                  [index]="authorList.indexOf(author)"
+                  [index]="rowIndex * gridColumns() + colIdx"
                   [cacheBuster]="thumbnailCacheBusters.get(author.id) || 0"
                   [canQuickMatch]="canEditMetadata"
                   [canDelete]="canDeleteBook"
@@ -223,7 +222,7 @@
               </div>
             }
           </div>
-        </virtual-scroller>
+        </cdk-virtual-scroll-viewport>
       }
     }
 

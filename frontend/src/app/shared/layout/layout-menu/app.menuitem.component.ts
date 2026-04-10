@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, HostBinding, inject, Input, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { animate, state, style, transition, trigger } from '@angular/animations';
 import { MenuService } from './app.menu.service';
 import { NgClass } from '@angular/common';
 import { Menu } from 'primeng/menu';
@@ -25,18 +24,7 @@ import { NavItem } from './app.menu.component';
     Menu,
     IconDisplayComponent,
     Tooltip,
-    TranslocoPipe
-  ],
-  animations: [
-    trigger('children', [
-      state('collapsed', style({
-        height: '0'
-      })),
-      state('expanded', style({
-        height: '*'
-      })),
-      transition('collapsed <=> expanded', animate('400ms cubic-bezier(0.86, 0, 0.07, 1)'))
-    ])
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

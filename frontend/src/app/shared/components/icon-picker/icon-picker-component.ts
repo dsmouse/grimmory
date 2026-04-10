@@ -9,7 +9,7 @@ import {UrlHelperService} from '../../service/url-helper.service';
 import {MessageService} from 'primeng/api';
 import {IconCategoriesHelper} from '../../helpers/icon-categories.helper';
 import {Button} from 'primeng/button';
-import {TabsModule} from 'primeng/tabs';
+import {Tab, TabList, TabPanel, TabPanels, Tabs} from 'primeng/tabs';
 import {UserService} from '../../../features/settings/user-management/user.service';
 import {from, of} from 'rxjs';
 import {catchError, mergeMap, toArray} from 'rxjs/operators';
@@ -39,7 +39,7 @@ interface SvgIconBatchResponse {
   imports: [
     FormsModule,
     Button,
-    TabsModule
+    Tabs, TabList, Tab, TabPanels, TabPanel
   ],
   templateUrl: './icon-picker-component.html',
   styleUrl: './icon-picker-component.scss'

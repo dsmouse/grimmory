@@ -1,5 +1,5 @@
 import {Component, ElementRef, inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {CommonModule, Location} from '@angular/common';
+import {Location} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
 import {FormsModule} from '@angular/forms';
 import {from, Observable, of, Subject} from 'rxjs';
@@ -28,7 +28,6 @@ import {API_CONFIG} from '../../../core/config/api-config';
   selector: 'app-audiobook-player',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     Button,
     Slider,

@@ -1,5 +1,4 @@
 import {Component, effect, inject, Input, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {BaseChartDirective} from 'ng2-charts';
 import {ChartConfiguration, ChartData, TooltipItem} from 'chart.js';
@@ -9,6 +8,7 @@ import {LibraryFilterService} from '../../service/library-filter.service';
 import {BookService} from '../../../../../book/service/book.service';
 import {Book, ReadStatus} from '../../../../../book/model/book.model';
 import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
+import {NgClass, AsyncPipe} from '@angular/common';
 
 interface ItemStats {
   name: string;
@@ -74,7 +74,9 @@ const READ_STATUS_ORDER: ReadStatus[] = [
 @Component({
   selector: 'app-top-items-chart',
   standalone: true,
-  imports: [CommonModule, FormsModule, BaseChartDirective, Select, TranslocoDirective],
+  imports: [
+    AsyncPipe,
+    NgClass,FormsModule, BaseChartDirective, Select, TranslocoDirective],
   templateUrl: './top-items-chart.component.html',
   styleUrls: ['./top-items-chart.component.scss']
 })

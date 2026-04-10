@@ -8,7 +8,7 @@ import {MessageService} from 'primeng/api';
 import {AppSettingKey} from '../../../../shared/model/app-settings.model';
 import {Select} from 'primeng/select';
 import {ExternalDocLinkComponent} from '../../../../shared/components/external-doc-link/external-doc-link.component';
-import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { ToggleSwitch } from 'primeng/toggleswitch';
 import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
 
 @Component({
@@ -21,7 +21,7 @@ import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
     FormsModule,
     Select,
     ExternalDocLinkComponent,
-    ToggleSwitchModule,
+    ToggleSwitch,
     TranslocoDirective
   ],
   templateUrl: './metadata-provider-settings.component.html',

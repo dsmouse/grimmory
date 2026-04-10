@@ -4,7 +4,7 @@ import {FormsModule} from '@angular/forms';
 import {InputText} from 'primeng/inputtext';
 import {ToggleSwitch} from 'primeng/toggleswitch';
 import {Button} from 'primeng/button';
-import {ToastModule} from 'primeng/toast';
+import {Toast} from 'primeng/toast';
 import {MessageService} from 'primeng/api';
 import {KoreaderService} from './koreader.service';
 import {UserService} from '../../../user-management/user.service';
@@ -19,7 +19,7 @@ import {TranslocoDirective, TranslocoPipe, TranslocoService} from '@jsverse/tran
     InputText,
     ToggleSwitch,
     Button,
-    ToastModule,
+    Toast,
     ExternalDocLinkComponent,
     TranslocoDirective,
     TranslocoPipe

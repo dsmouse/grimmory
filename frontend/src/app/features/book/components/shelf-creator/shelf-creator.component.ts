@@ -10,7 +10,7 @@ import {InputText} from 'primeng/inputtext';
 import {Tooltip} from 'primeng/tooltip';
 import {IconDisplayComponent} from '../../../../shared/components/icon-display/icon-display.component';
 import {UserService} from '../../../settings/user-management/user.service';
-import {CheckboxModule} from 'primeng/checkbox';
+import {Checkbox} from 'primeng/checkbox';
 import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
 
 @Component({
@@ -23,7 +23,7 @@ import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
     InputText,
     Tooltip,
     IconDisplayComponent,
-    CheckboxModule,
+    Checkbox,
     TranslocoDirective
   ],
   styleUrl: './shelf-creator.component.scss',

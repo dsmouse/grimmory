@@ -1,5 +1,4 @@
 import {Component, inject, Input, OnDestroy, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {BaseChartDirective} from 'ng2-charts';
 import {Tooltip} from 'primeng/tooltip';
 import {ChartConfiguration, ChartData} from 'chart.js';
@@ -7,6 +6,7 @@ import {BehaviorSubject, EMPTY, Observable, Subject} from 'rxjs';
 import {catchError, takeUntil} from 'rxjs/operators';
 import {CompletionRaceResponse, UserStatsService} from '../../../../../settings/user-management/user-stats.service';
 import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
+import {AsyncPipe} from '@angular/common';
 
 interface BookRace {
   bookId: number;
@@ -26,7 +26,8 @@ const LINE_COLORS = [
 @Component({
   selector: 'app-completion-race-chart',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective, Tooltip, TranslocoDirective],
+  imports: [
+    AsyncPipe,BaseChartDirective, Tooltip, TranslocoDirective],
   templateUrl: './completion-race-chart.component.html',
   styleUrls: ['./completion-race-chart.component.scss']
 })

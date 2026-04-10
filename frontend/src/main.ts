@@ -5,7 +5,6 @@ import { RxStompService } from './app/shared/websocket/rx-stomp.service';
 import { rxStompServiceFactory } from './app/shared/websocket/rx-stomp-service-factory';
 import { provideRouter, RouteReuseStrategy } from '@angular/router';
 import { CustomReuseStrategy } from './app/core/custom-reuse-strategy';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
@@ -13,7 +12,7 @@ import Aura from './app/shared/layout/theme-palette-extend';
 import { routes } from './app/app.routes';
 import { AuthInterceptorService } from './app/core/security/auth-interceptor.service';
 import { AuthService, websocketInitializer } from './app/shared/service/auth.service';
-import { inject, isDevMode, provideAppInitializer, provideZoneChangeDetection } from '@angular/core';
+import { inject, isDevMode, provideAppInitializer, provideZonelessChangeDetection } from '@angular/core';
 import { initializeAuthFactory } from './app/core/security/auth-initializer';
 import { StartupService } from './app/shared/service/startup.service';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
@@ -26,7 +25,7 @@ import { provideTanStackQuery, QueryClient } from '@tanstack/angular-query-exper
 
 bootstrapApplication(AppComponent, {
   providers: [
-    provideZoneChangeDetection(),
+    provideZonelessChangeDetection(),
     provideCharts(withDefaultRegisterables(), ChartDataLabels),
     provideTanStackQuery(new QueryClient({
       defaultOptions: {
@@ -71,7 +70,6 @@ bootstrapApplication(AppComponent, {
       loader: TranslocoInlineLoader,
     }),
     provideAppInitializer(initializeLanguage()),
-    provideAnimationsAsync(),
     providePrimeNG({
       theme: {
         preset: Aura,

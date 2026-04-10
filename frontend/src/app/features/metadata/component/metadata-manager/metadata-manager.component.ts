@@ -1,12 +1,10 @@
 import {Component, effect, inject, OnDestroy, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {Tab, TabList, TabPanel, TabPanels, Tabs} from 'primeng/tabs';
 import {TableModule} from 'primeng/table';
-import {ButtonModule} from 'primeng/button';
-import {CheckboxModule} from 'primeng/checkbox';
-import {InputTextModule} from 'primeng/inputtext';
-import {DialogModule} from 'primeng/dialog';
-import {ConfirmDialogModule} from 'primeng/confirmdialog';
+import {Button} from 'primeng/button';
+import {Checkbox} from 'primeng/checkbox';
+import {InputText} from 'primeng/inputtext';
+import {Dialog} from 'primeng/dialog';
 import {ConfirmationService, MessageService} from 'primeng/api';
 import {PageTitleService} from "../../../../shared/service/page-title.service";
 import {BookService} from '../../../book/service/book.service';
@@ -43,15 +41,13 @@ interface TabConfig {
   selector: 'app-metadata-manager',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     Tabs,
     TableModule,
-    ButtonModule,
-    CheckboxModule,
-    InputTextModule,
-    DialogModule,
-    ConfirmDialogModule,
+    Button,
+    Checkbox,
+    InputText,
+    Dialog,
     TabList,
     Tab,
     TabPanels,

@@ -1,12 +1,12 @@
-import {Component, inject, OnDestroy, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import {Component, DestroyRef, inject, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {of, Subject} from 'rxjs';
-import {debounceTime, switchMap, takeUntil} from 'rxjs/operators';
-import {InputTextModule} from 'primeng/inputtext';
+import {debounceTime, switchMap} from 'rxjs/operators';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {InputText} from 'primeng/inputtext';
 import {Select} from 'primeng/select';
 import {Button} from 'primeng/button';
-import {TooltipModule} from 'primeng/tooltip';
+import {Tooltip} from 'primeng/tooltip';
 import {Paginator} from 'primeng/paginator';
 import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
 import {NotebookService} from '../../service/notebook.service';
@@ -14,6 +14,7 @@ import {NotebookEntry, NotebookPage} from '../../model/notebook.model';
 import {UrlHelperService} from '../../../../shared/service/url-helper.service';
 import {CoverPlaceholderComponent} from '../../../../shared/components/cover-generator/cover-generator.component';
 import {PageTitleService} from '../../../../shared/service/page-title.service';
+import {DatePipe} from '@angular/common';
 
 interface BookGroup {
   bookId: number;
@@ -36,12 +37,12 @@ const EMPTY_PAGE: NotebookPage = {
   selector: 'app-notebook',
   standalone: true,
   imports: [
-    CommonModule,
+    DatePipe,
     FormsModule,
-    InputTextModule,
+    InputText,
     Select,
     Button,
-    TooltipModule,
+    Tooltip,
     Paginator,
     TranslocoDirective,
     CoverPlaceholderComponent,
@@ -49,8 +50,8 @@ const EMPTY_PAGE: NotebookPage = {
   templateUrl: './notebook.component.html',
   styleUrls: ['./notebook.component.scss'],
 })
-export class NotebookComponent implements OnInit, OnDestroy {
-  private readonly destroy$ = new Subject<void>();
+export class NotebookComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
   private readonly searchSubject = new Subject<void>();
   private readonly loadTrigger$ = new Subject<void>();
   private readonly bookFilterSubject = new Subject<string>();
@@ -93,7 +94,7 @@ export class NotebookComponent implements OnInit, OnDestroy {
           this.page, this.pageSize, types, this.selectedBookId, this.searchQuery, this.sortDirection
         );
       }),
-      takeUntil(this.destroy$)
+      takeUntilDestroyed(this.destroyRef)
     ).subscribe(result => {
       this.totalEntries = result.page.totalElements;
       this.groupEntries(result.content);
@@ -102,7 +103,7 @@ export class NotebookComponent implements OnInit, OnDestroy {
 
     this.searchSubject.pipe(
       debounceTime(300),
-      takeUntil(this.destroy$)
+      takeUntilDestroyed(this.destroyRef)
     ).subscribe(() => {
       this.page = 0;
       this.first = 0;
@@ -112,18 +113,13 @@ export class NotebookComponent implements OnInit, OnDestroy {
     this.bookFilterSubject.pipe(
       debounceTime(300),
       switchMap(filter => this.notebookService.getBooksWithAnnotations(filter || undefined)),
-      takeUntil(this.destroy$)
+      takeUntilDestroyed(this.destroyRef)
     ).subscribe(books => {
       this.updateBookOptions(books.map(b => ({label: b.bookTitle, value: b.bookId})));
     });
 
     this.loadBooks();
     this.loadTrigger$.next();
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   onSearchChange(): void {
@@ -161,7 +157,7 @@ export class NotebookComponent implements OnInit, OnDestroy {
 
   private loadBooks(): void {
     this.notebookService.getBooksWithAnnotations()
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(books => {
         this.bookOptions = books.map(b => ({label: b.bookTitle, value: b.bookId}));
       });
@@ -240,7 +236,7 @@ export class NotebookComponent implements OnInit, OnDestroy {
     this.exporting = true;
     this.notebookService.getExportEntries(
       types, this.selectedBookId, this.searchQuery, this.sortDirection
-    ).pipe(takeUntil(this.destroy$)).subscribe(entries => {
+    ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(entries => {
       this.generateMarkdownDownload(entries);
       this.exporting = false;
     });

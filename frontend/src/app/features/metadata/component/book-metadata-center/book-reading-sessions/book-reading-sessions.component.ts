@@ -1,13 +1,14 @@
 import {Component, inject, Input, OnInit, OnChanges, SimpleChanges} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {ReadingSessionApiService, ReadingSessionResponse} from '../../../../../shared/service/reading-session-api.service';
 import {TableModule} from 'primeng/table';
-import {ProgressSpinnerModule} from 'primeng/progressspinner';
+import {ProgressSpinner} from 'primeng/progressspinner';
 import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
+import {NgClass} from '@angular/common';
 @Component({
   selector: 'app-book-reading-sessions',
   standalone: true,
-  imports: [CommonModule, TableModule, ProgressSpinnerModule, TranslocoDirective],
+  imports: [
+    NgClass,TableModule, ProgressSpinner, TranslocoDirective],
   templateUrl: './book-reading-sessions.component.html',
   styleUrls: ['./book-reading-sessions.component.scss']
 })

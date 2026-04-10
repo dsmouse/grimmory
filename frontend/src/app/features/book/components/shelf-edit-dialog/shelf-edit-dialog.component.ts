@@ -9,7 +9,7 @@ import {Shelf} from '../../model/shelf.model';
 import {MessageService} from 'primeng/api';
 import {IconPickerService, IconSelection} from '../../../../shared/service/icon-picker.service';
 import {IconDisplayComponent} from '../../../../shared/components/icon-display/icon-display.component';
-import {CheckboxModule} from 'primeng/checkbox';
+import {Checkbox} from 'primeng/checkbox';
 import {UserService} from '../../../settings/user-management/user.service';
 import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
 
@@ -21,7 +21,7 @@ import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
     ReactiveFormsModule,
     FormsModule,
     IconDisplayComponent,
-    CheckboxModule,
+    Checkbox,
     TranslocoDirective
   ],
   templateUrl: './shelf-edit-dialog.component.html',

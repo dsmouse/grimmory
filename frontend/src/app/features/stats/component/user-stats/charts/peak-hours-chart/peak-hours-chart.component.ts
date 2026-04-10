@@ -1,32 +1,34 @@
-import {Component, inject, OnDestroy, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import {Component, DestroyRef, inject, OnInit} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {BaseChartDirective} from 'ng2-charts';
 import {ChartConfiguration, ChartData} from 'chart.js';
-import {BehaviorSubject, EMPTY, Observable, Subject} from 'rxjs';
-import {catchError, takeUntil} from 'rxjs/operators';
+import {BehaviorSubject, EMPTY, Observable} from 'rxjs';
+import {catchError} from 'rxjs/operators';
 import {Select} from 'primeng/select';
 import {Tooltip} from 'primeng/tooltip';
 import {FormsModule} from '@angular/forms';
 import {PeakHoursResponse, UserStatsService} from '../../../../../settings/user-management/user-stats.service';
 import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
+import {AsyncPipe} from '@angular/common';
 
 type PeakHoursChartData = ChartData<'line', number[], string>;
 
 @Component({
   selector: 'app-peak-hours-chart',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective, Select, FormsModule, Tooltip, TranslocoDirective],
+  imports: [
+    AsyncPipe, BaseChartDirective, Select, FormsModule, Tooltip, TranslocoDirective],
   templateUrl: './peak-hours-chart.component.html',
   styleUrls: ['./peak-hours-chart.component.scss']
 })
-export class PeakHoursChartComponent implements OnInit, OnDestroy {
+export class PeakHoursChartComponent implements OnInit {
   public readonly chartType = 'line' as const;
   public readonly chartData$: Observable<PeakHoursChartData>;
   public readonly chartOptions: ChartConfiguration['options'];
 
   private readonly userStatsService = inject(UserStatsService);
   private readonly t = inject(TranslocoService);
-  private readonly destroy$ = new Subject<void>();
+  private readonly destroyRef = inject(DestroyRef);
   private readonly chartDataSubject: BehaviorSubject<PeakHoursChartData>;
 
   public selectedYear: number | null = null;
@@ -168,11 +170,6 @@ export class PeakHoursChartComponent implements OnInit, OnDestroy {
     this.loadPeakHours();
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
   private initializeYearOptions(): void {
     const currentYear = new Date().getFullYear();
     this.yearOptions = [{label: this.t.translate('statsUser.peakHours.allYears'), value: null}];
@@ -196,7 +193,7 @@ export class PeakHoursChartComponent implements OnInit, OnDestroy {
 
     this.userStatsService.getPeakHours(year, month)
       .pipe(
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
         catchError((error) => {
           console.error('Error loading peak hours:', error);
           return EMPTY;

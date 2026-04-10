@@ -1,5 +1,4 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {ReaderIconComponent} from './icon.component';
 
@@ -16,7 +15,7 @@ export interface TextSelectionAction {
 @Component({
   selector: 'app-text-selection-popup',
   standalone: true,
-  imports: [CommonModule, TranslocoDirective, ReaderIconComponent],
+  imports: [TranslocoDirective, ReaderIconComponent],
   templateUrl: './selection-popup.component.html',
   styleUrls: ['./selection-popup.component.scss']
 })

@@ -1,6 +1,5 @@
 import '@angular/compiler';
-import 'zone.js';
-import 'zone.js/testing';
+import {vi} from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import 'vitest-canvas-mock';
 import {TestBed} from '@angular/core/testing';
@@ -30,17 +29,34 @@ class MockIntersectionObserver {
   }
 }
 
-if (!globalThis.matchMedia) {
-  globalThis.matchMedia = (query: string): MediaQueryList => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addEventListener: () => undefined,
-    removeEventListener: () => undefined,
-    addListener: () => undefined,
-    removeListener: () => undefined,
-    dispatchEvent: () => false,
-  });
+// Standard mock for matchMedia to support PrimeNG and other UI libraries in JSDOM
+const matchMediaMock = (query: string): MediaQueryList => ({
+  matches: false,
+  media: query,
+  onchange: null,
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+  addListener: vi.fn(), // Deprecated but still used by some libraries
+  removeListener: vi.fn(), // Deprecated
+  dispatchEvent: vi.fn(),
+});
+
+Object.defineProperty(globalThis, 'matchMedia', {
+  writable: true,
+  configurable: true,
+  enumerable: true,
+  value: matchMediaMock,
+});
+
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  configurable: true,
+  enumerable: true,
+  value: matchMediaMock,
+});
+
+if (process.env['GITHUB_ACTIONS']) {
+  console.log('Test setup: Applied robust window.matchMedia mock');
 }
 
 if (!globalThis.ResizeObserver) {

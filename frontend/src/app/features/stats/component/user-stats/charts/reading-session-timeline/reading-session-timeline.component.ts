@@ -1,5 +1,4 @@
 import {Component, inject, Input, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {catchError} from 'rxjs/operators';
 import {of} from 'rxjs';
 import {Select} from 'primeng/select';
@@ -54,7 +53,7 @@ interface DayTimeline {
 @Component({
   selector: 'app-reading-session-timeline',
   standalone: true,
-  imports: [CommonModule, Select, FormsModule, Tooltip, TranslocoDirective],
+  imports: [Select, FormsModule, Tooltip, TranslocoDirective],
   templateUrl: './reading-session-timeline.component.html',
   styleUrls: ['./reading-session-timeline.component.scss']
 })

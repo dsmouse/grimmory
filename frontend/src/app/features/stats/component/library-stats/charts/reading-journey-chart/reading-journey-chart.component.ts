@@ -1,5 +1,4 @@
 import {Component, computed, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {BaseChartDirective} from 'ng2-charts';
 import {ChartConfiguration, ChartData} from 'chart.js';
 import {LibraryFilterService} from '../../service/library-filter.service';
@@ -36,7 +35,7 @@ type JourneyChartData = ChartData<'line', number[], string>;
 @Component({
   selector: 'app-reading-journey-chart',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective, TranslocoDirective],
+  imports: [BaseChartDirective, TranslocoDirective],
   templateUrl: './reading-journey-chart.component.html',
   styleUrls: ['./reading-journey-chart.component.scss']
 })

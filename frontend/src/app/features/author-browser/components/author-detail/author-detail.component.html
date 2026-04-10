@@ -104,14 +104,14 @@
                     <p>{{ t('noBooksFound') }}</p>
                   </div>
                 } @else {
-                  <virtual-scroller #scroll [items]="books" [bufferAmount]="16" class="books-virtual-scroller">
-                    <div class="books-grid" #container
-                      [ngStyle]="{'grid-template-columns': 'repeat(auto-fill, minmax(' + gridColumnMinWidth + ', 1fr))'}">
-                      @for (book of scroll.viewPortItems; track book.id; let i = $index) {
+                  <cdk-virtual-scroll-viewport autosize [minBufferPx]="600" [maxBufferPx]="1200" class="books-virtual-scroller">
+                    <div *cdkVirtualFor="let row of bookRows(); let rowIdx = index" class="books-grid"
+                      [ngStyle]="{'grid-template-columns': 'repeat(' + gridColumns() + ', 1fr)'}">
+                      @for (book of row; let j = $index; track book.id) {
                         <div class="virtual-scroller-item"
                           [ngStyle]="{width: currentCardSize.width + 'px', height: currentCardSize.height + 'px'}">
                           <app-book-card
-                            [index]="books.indexOf(book)"
+                            [index]="rowIdx * gridColumns() + j"
                             [book]="book"
                             [isSeriesCollapsed]="false"
                             [overlayPreferenceService]="bookCardOverlayPreferenceService">
@@ -119,7 +119,7 @@
                         </div>
                       }
                     </div>
-                  </virtual-scroller>
+                  </cdk-virtual-scroll-viewport>
                 }
               </div>
             }

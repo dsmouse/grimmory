@@ -398,7 +398,7 @@
   </p-tabs>
   @if (selectedBooks.size > 0) {
     @if (currentUser(); as user) {
-      <div class="book-browser-footer" [@slideInOut]>
+      <div class="book-browser-footer" [animate.enter]="'slide-in-up'" [animate.leave]="'slide-out-down'">
         <div class="footer-content">
           <div class="footer-left">
             <div class="selected-count-badge">

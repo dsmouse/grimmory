@@ -14,7 +14,7 @@ function createRoute(path: string, params: Record<string, string> = {}): Activat
 }
 
 describe('CustomReuseStrategy', () => {
-  const handle = {componentRef: {} as never} as DetachedRouteHandle;
+  const handle = {componentRef: {destroy: vi.fn()} as never} as DetachedRouteHandle;
 
   let strategy: CustomReuseStrategy;
   let scrollService: BookBrowserScrollService;
@@ -121,5 +121,73 @@ describe('CustomReuseStrategy', () => {
     expect(strategy.shouldReuseRoute(same, current)).toBe(true);
     expect(strategy.shouldReuseRoute(differentParams, current)).toBe(false);
     expect(strategy.shouldReuseRoute(differentConfig, current)).toBe(false);
+  });
+
+  it('evicts the oldest route when storing more than MAX_STORED_ROUTES (3)', () => {
+    const route1 = createRoute('library/:libraryId/books', {libraryId: '1'});
+    const route2 = createRoute('library/:libraryId/books', {libraryId: '2'});
+    const route3 = createRoute('library/:libraryId/books', {libraryId: '3'});
+    const route4 = createRoute('library/:libraryId/books', {libraryId: '4'});
+
+    const handle1 = {componentRef: {id: 1, destroy: vi.fn()} as never} as DetachedRouteHandle;
+    const handle2 = {componentRef: {id: 2, destroy: vi.fn()} as never} as DetachedRouteHandle;
+    const handle3 = {componentRef: {id: 3, destroy: vi.fn()} as never} as DetachedRouteHandle;
+    const handle4 = {componentRef: {id: 4, destroy: vi.fn()} as never} as DetachedRouteHandle;
+
+    strategy.store(route1, handle1);
+    strategy.store(route2, handle2);
+    strategy.store(route3, handle3);
+
+    expect(strategy.shouldAttach(route1)).toBe(true);
+    expect(strategy.shouldAttach(route2)).toBe(true);
+    expect(strategy.shouldAttach(route3)).toBe(true);
+
+    strategy.store(route4, handle4);
+
+    expect(strategy.shouldAttach(route1)).toBe(false);
+    expect(strategy.shouldAttach(route2)).toBe(true);
+    expect(strategy.shouldAttach(route3)).toBe(true);
+    expect(strategy.shouldAttach(route4)).toBe(true);
+  });
+
+  it('clears scroll positions when evicting old routes', () => {
+    const clearSpy = vi.spyOn(scrollService, 'clearPosition');
+
+    const route1 = createRoute('library/:libraryId/books', {libraryId: '10'});
+    const route2 = createRoute('library/:libraryId/books', {libraryId: '20'});
+    const route3 = createRoute('library/:libraryId/books', {libraryId: '30'});
+    const route4 = createRoute('library/:libraryId/books', {libraryId: '40'});
+
+    scrollService.savePosition('library/:libraryId/books:10', 100);
+
+    strategy.store(route1, handle);
+    strategy.store(route2, handle);
+    strategy.store(route3, handle);
+
+    expect(clearSpy).not.toHaveBeenCalled();
+
+    strategy.store(route4, handle);
+
+    expect(clearSpy).toHaveBeenCalledWith('library/:libraryId/books:10');
+  });
+
+  it('re-storing an existing route refreshes its LRU position', () => {
+    const route1 = createRoute('library/:libraryId/books', {libraryId: '1'});
+    const route2 = createRoute('library/:libraryId/books', {libraryId: '2'});
+    const route3 = createRoute('library/:libraryId/books', {libraryId: '3'});
+    const route4 = createRoute('library/:libraryId/books', {libraryId: '4'});
+
+    strategy.store(route1, handle);
+    strategy.store(route2, handle);
+    strategy.store(route3, handle);
+
+    strategy.store(route1, handle);
+
+    strategy.store(route4, handle);
+
+    expect(strategy.shouldAttach(route1)).toBe(true);
+    expect(strategy.shouldAttach(route2)).toBe(false);
+    expect(strategy.shouldAttach(route3)).toBe(true);
+    expect(strategy.shouldAttach(route4)).toBe(true);
   });
 });

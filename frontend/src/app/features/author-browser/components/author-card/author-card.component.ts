@@ -1,7 +1,7 @@
 import {ChangeDetectorRef, Component, EventEmitter, inject, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
 import {TranslocoPipe, TranslocoService} from '@jsverse/transloco';
 import {Tooltip} from 'primeng/tooltip';
-import {CheckboxChangeEvent, CheckboxModule} from 'primeng/checkbox';
+import {CheckboxChangeEvent, Checkbox} from 'primeng/checkbox';
 import {FormsModule} from '@angular/forms';
 import {TieredMenu} from 'primeng/tieredmenu';
 import {Button} from 'primeng/button';
@@ -14,7 +14,7 @@ import {AuthorService} from '../../service/author.service';
   standalone: true,
   templateUrl: './author-card.component.html',
   styleUrls: ['./author-card.component.scss'],
-  imports: [TranslocoPipe, Tooltip, CheckboxModule, FormsModule, TieredMenu, Button]
+  imports: [TranslocoPipe, Tooltip, Checkbox, FormsModule, TieredMenu, Button]
 })
 export class AuthorCardComponent implements OnChanges {
 

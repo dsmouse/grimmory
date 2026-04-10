@@ -1,8 +1,7 @@
 import {Component, computed, inject, signal} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {CdkDragDrop, DragDropModule} from '@angular/cdk/drag-drop';
-import {DialogModule} from 'primeng/dialog';
-import {ButtonModule} from 'primeng/button';
+import {Dialog} from 'primeng/dialog';
+import {Button} from 'primeng/button';
 import {UserService} from '../../../settings/user-management/user.service';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {PeakHoursChartComponent} from './charts/peak-hours-chart/peak-hours-chart.component';
@@ -34,10 +33,9 @@ import {UserChartConfig, UserChartConfigService} from './service/user-chart-conf
   selector: 'app-user-stats',
   standalone: true,
   imports: [
-    CommonModule,
     DragDropModule,
-    DialogModule,
-    ButtonModule,
+    Dialog,
+    Button,
     ReadingSessionHeatmapComponent,
     ReadingSessionTimelineComponent,
     GenreStatsChartComponent,

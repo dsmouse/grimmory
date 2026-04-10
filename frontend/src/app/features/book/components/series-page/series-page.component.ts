@@ -3,14 +3,13 @@ import {Button} from "primeng/button";
 import {ActivatedRoute, Router} from "@angular/router";
 import {toSignal} from '@angular/core/rxjs-interop';
 import {DecimalPipe, KeyValuePipe, NgClass, NgStyle} from "@angular/common";
-import {finalize, map} from "rxjs/operators";
+import {finalize, map, take} from "rxjs/operators";
 import {Book, BookType, computeSeriesReadStatus, ReadStatus} from "../../model/book.model";
 import {BookService} from "../../service/book.service";
 import {BookMetadataManageService} from "../../service/book-metadata-manage.service";
 import {BookCardComponent} from "../book-browser/book-card/book-card.component";
 import {CoverScalePreferenceService} from "../book-browser/cover-scale-preference.service";
 import {Tab, TabList, TabPanel, TabPanels, Tabs} from "primeng/tabs";
-import {VirtualScrollerModule} from "@iharbeck/ngx-virtual-scroller";
 import {ProgressSpinner} from "primeng/progressspinner";
 import {ProgressBar} from "primeng/progressbar";
 import {DynamicDialogRef} from "primeng/dynamicdialog";
@@ -27,7 +26,6 @@ import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
 import {Tooltip} from "primeng/tooltip";
 import {Divider} from "primeng/divider";
 import {TagComponent} from "../../../../shared/components/tag/tag.component";
-import {animate, style, transition, trigger} from "@angular/animations";
 import {AfterViewChecked, Component, computed, effect, ElementRef, inject, ViewChild} from '@angular/core';
 import {BookCardOverlayPreferenceService} from '../book-browser/book-card-overlay-preference.service';
 import {UrlHelperService} from '../../../../shared/service/url-helper.service';
@@ -84,26 +82,13 @@ interface SeriesStats {
     Tab,
     TabPanels,
     TabPanel,
-    VirtualScrollerModule,
     TieredMenu,
     Tooltip,
     Divider,
     TranslocoDirective,
     TagComponent,
-    CoverPlaceholderComponent
+    CoverPlaceholderComponent,
   ],
-  animations: [
-    trigger('slideInOut', [
-      transition(':enter', [
-        style({transform: 'translateY(100%)'}),
-        animate('0.1s ease-in', style({transform: 'translateY(0)'}))
-      ]),
-      transition(':leave', [
-        style({transform: 'translateY(0)'}),
-        animate('0.1s ease-out', style({transform: 'translateY(100%)'}))
-      ])
-    ])
-  ]
 })
 export class SeriesPageComponent implements AfterViewChecked {
 
@@ -606,7 +591,7 @@ export class SeriesPageComponent implements AfterViewChecked {
   openShelfAssigner(): void {
     this.dialogRef = this.dialogHelperService.openShelfAssignerDialog(null, this.selectedBooks);
     if (this.dialogRef) {
-      this.dialogRef.onClose.subscribe(result => {
+      this.dialogRef.onClose.pipe(take(1)).subscribe(result => {
         if (result.assigned) {
           this.selectedBooks.clear();
         }
@@ -617,7 +602,7 @@ export class SeriesPageComponent implements AfterViewChecked {
   lockUnlockMetadata(): void {
     this.dialogRef = this.dialogHelperService.openLockUnlockMetadataDialog(this.selectedBooks);
     if (this.dialogRef) {
-      this.dialogRef.onClose.subscribe(() => {
+      this.dialogRef.onClose.pipe(take(1)).subscribe(() => {
         this.deselectAllBooks();
       });
     }
@@ -638,7 +623,7 @@ export class SeriesPageComponent implements AfterViewChecked {
   bulkEditMetadata(): void {
     this.dialogRef = this.dialogHelperService.openBulkMetadataEditDialog(this.selectedBooks);
     if (this.dialogRef) {
-      this.dialogRef.onClose.subscribe(() => {
+      this.dialogRef.onClose.pipe(take(1)).subscribe(() => {
         this.deselectAllBooks();
       });
     }
@@ -647,7 +632,7 @@ export class SeriesPageComponent implements AfterViewChecked {
   multiBookEditMetadata(): void {
     this.dialogRef = this.dialogHelperService.openMultibookMetadataEditorDialog(this.selectedBooks);
     if (this.dialogRef) {
-      this.dialogRef.onClose.subscribe(() => {
+      this.dialogRef.onClose.pipe(take(1)).subscribe(() => {
         this.deselectAllBooks();
       });
     }

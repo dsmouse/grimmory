@@ -1,7 +1,6 @@
 import {Component, effect, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
-import {AccordionModule} from 'primeng/accordion';
+import {Accordion, AccordionPanel, AccordionHeader, AccordionContent} from 'primeng/accordion';
 import {MessageService} from 'primeng/api';
 import {Button} from 'primeng/button';
 import {Tooltip} from 'primeng/tooltip';
@@ -19,7 +18,7 @@ import {SidecarService} from '../../metadata/service/sidecar.service';
 @Component({
   selector: 'app-library-metadata-settings-component',
   standalone: true,
-  imports: [CommonModule, FormsModule, MetadataAdvancedFetchOptionsComponent, AccordionModule, ExternalDocLinkComponent, Button, Tooltip, TranslocoDirective],
+  imports: [FormsModule, MetadataAdvancedFetchOptionsComponent, Accordion, AccordionPanel, AccordionHeader, AccordionContent, ExternalDocLinkComponent, Button, Tooltip, TranslocoDirective],
   templateUrl: './library-metadata-settings.component.html',
   styleUrls: ['./library-metadata-settings.component.scss']
 })

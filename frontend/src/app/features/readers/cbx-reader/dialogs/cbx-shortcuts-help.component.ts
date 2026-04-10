@@ -1,5 +1,4 @@
 import {Component, EventEmitter, inject, Output} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {TranslocoService, TranslocoPipe} from '@jsverse/transloco';
 import {ReaderIconComponent} from '../../ebook-reader/shared/icon.component';
 
@@ -17,7 +16,7 @@ interface ShortcutGroup {
 @Component({
   selector: 'app-cbx-shortcuts-help',
   standalone: true,
-  imports: [CommonModule, TranslocoPipe, ReaderIconComponent],
+  imports: [TranslocoPipe, ReaderIconComponent],
   templateUrl: './cbx-shortcuts-help.component.html',
   styleUrls: ['./cbx-shortcuts-help.component.scss']
 })

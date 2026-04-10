@@ -1,5 +1,4 @@
 import {Component, DestroyRef, inject, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {Button} from 'primeng/button';
@@ -17,7 +16,6 @@ import {BookNote, BookNoteService, CreateBookNoteRequest} from '../../../../shar
   selector: 'app-book-notes-component',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     Button,
     Dialog,

@@ -1,13 +1,11 @@
 import {Component, computed, effect, inject} from '@angular/core';
 import {toSignal} from '@angular/core/rxjs-interop';
-import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {DynamicDialogRef} from 'primeng/dynamicdialog';
-import {ButtonModule} from 'primeng/button';
-import {CheckboxModule} from 'primeng/checkbox';
-import {InputTextModule} from 'primeng/inputtext';
-import {SelectModule} from 'primeng/select';
-import {InputNumberModule} from 'primeng/inputnumber';
+import {Button} from 'primeng/button';
+import {Checkbox} from 'primeng/checkbox';
+import {Select} from 'primeng/select';
+import {InputNumber} from 'primeng/inputnumber';
 import {DashboardConfig, ScrollerConfig, ScrollerType} from '../../models/dashboard-config.model';
 import {DashboardConfigService} from '../../services/dashboard-config.service';
 import {MagicShelfService} from '../../../magic-shelf/service/magic-shelf.service';
@@ -22,13 +20,11 @@ export const MAX_ITEMS = 20;
   selector: 'app-dashboard-settings',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
-    ButtonModule,
-    CheckboxModule,
-    InputTextModule,
-    SelectModule,
-    InputNumberModule,
+    Button,
+    Checkbox,
+    Select,
+    InputNumber,
     TranslocoDirective,
     TranslocoPipe
   ],
