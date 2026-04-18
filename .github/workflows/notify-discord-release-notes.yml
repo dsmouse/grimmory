@@ -109,9 +109,15 @@ jobs:
             description="${description}\n- Candidate SHA: \`${short_sha}\`"
           fi
 
+          note_text=""
+          if [ "$CHANNEL" = "rc" ] || [ "$CHANNEL" = "nightly" ]; then
+            note_text="*Note: You must be signed into GitHub to view the changelog*"
+            content="${content}\n${note_text}"
+          fi
+
           {
             echo 'content<<EOF'
-            printf '%s\n' "$content"
+            printf '%b\n' "$content"
             echo 'EOF'
             echo "title_url=${title_url}"
             echo 'description<<EOF'
