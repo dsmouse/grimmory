@@ -161,6 +161,13 @@ describe('magic-shelf-utils', () => {
       const result = parseValue('2024-06-15', 'date');
       expect(result).toBeInstanceOf(Date);
       expect((result as Date).getFullYear()).toBe(2024);
+      expect((result as Date).getDate()).toBe(15);
+    });
+
+    it('should parse date time values correctly', () => {
+      const result = parseValue('2024-06-15T01:02:03', 'date');
+      expect(result).toBeInstanceOf(Date);
+      expect((result as Date).getHours()).toBe(1);
     });
 
     it('should return null for invalid date values', () => {

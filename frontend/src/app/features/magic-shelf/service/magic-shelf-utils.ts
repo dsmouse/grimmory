@@ -17,6 +17,28 @@ export const RELATIVE_DATE_OPERATORS: RuleOperator[] = [
   'this_period'
 ];
 
+function parseDate(val: unknown): Date | null {
+  if (typeof val === "string") {
+    if (val.match("^[0-9]{4}-[0-9]{2}-[0-9]{2}$")) {
+      // If `val` is a date-only string, add midnight local time to it
+      // when parsing so we don't get UTC time leading to confusion.
+      val = Date.parse(val + 'T00:00:00');
+    } else {
+      val = Date.parse(val);
+    }
+  }
+
+  if (typeof val === "number") {
+    val = new Date(val);
+  }
+
+  if (!(val instanceof Date) || isNaN(val.getTime())) {
+    return null;
+  }
+
+  return val;
+}
+
 export function parseValue(val: unknown, type: 'string' | 'number' | 'decimal' | 'date' | 'boolean' | undefined): unknown {
   if (val == null) return null;
   if (type === 'number' || type === 'decimal') {
@@ -24,8 +46,7 @@ export function parseValue(val: unknown, type: 'string' | 'number' | 'decimal' |
     return isNaN(num) ? null : num;
   }
   if (type === 'date') {
-    const d = new Date(val as string | number | Date);
-    return isNaN(d.getTime()) ? null : d;
+    return parseDate(val)
   }
   return val;
 }
@@ -45,6 +66,19 @@ export function removeNulls(obj: unknown): unknown {
   return obj;
 }
 
+function serializeDate(val: unknown) {
+  if (!(val instanceof Date)) {
+    return val;
+  }
+
+  // Manually craft the serialized date as a "local" date string
+  // so we don't have a timezone shifting the day-of-month.
+  const year = ("0000" + val.getFullYear()).slice(-4);
+  const month = ("00" + (val.getMonth() + 1)).slice(-2);
+  const day = ("00" + (val.getDate())).slice(-2);
+  return `${year}-${month}-${day}`;
+}
+
 export function serializeDateRules(ruleOrGroup: unknown): unknown {
   if (ruleOrGroup !== null && typeof ruleOrGroup === 'object' && 'rules' in ruleOrGroup) {
     const group = ruleOrGroup as { rules: unknown[] };
@@ -57,12 +91,11 @@ export function serializeDateRules(ruleOrGroup: unknown): unknown {
   const rule = ruleOrGroup as { field?: string; operator?: string; value?: unknown; valueStart?: unknown; valueEnd?: unknown; [key: string]: unknown };
   const isRelativeDateOp = RELATIVE_DATE_OPERATORS.includes(rule.operator as RuleOperator);
   const isDateField = !isRelativeDateOp && (rule.field === 'publishedDate' || rule.field === 'dateFinished' || rule.field === 'addedOn' || rule.field === 'lastReadTime');
-  const serialize = (val: unknown) => (val instanceof Date ? val.toISOString().split('T')[0] : val);
 
   return {
     ...(ruleOrGroup as Record<string, unknown>),
-    value: isDateField ? serialize(rule.value) : rule.value,
-    valueStart: isDateField ? serialize(rule.valueStart) : rule.valueStart,
-    valueEnd: isDateField ? serialize(rule.valueEnd) : rule.valueEnd
+    value: isDateField ? serializeDate(rule.value) : rule.value,
+    valueStart: isDateField ? serializeDate(rule.valueStart) : rule.valueStart,
+    valueEnd: isDateField ? serializeDate(rule.valueEnd) : rule.valueEnd
   };
 }
