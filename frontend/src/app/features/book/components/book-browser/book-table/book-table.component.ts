@@ -40,6 +40,7 @@ export class BookTableComponent implements OnInit, OnDestroy, OnChanges {
   selectedBookIds = new Set<number>();
 
   @Output() selectedBooksChange = new EventEmitter<Set<number>>();
+  @Output() selectAllRequested = new EventEmitter<void>();
   @Input() books: Book[] = [];
   @Input() sortOption: SortOption | null = null;
   @Input() visibleColumns: { field: string; header: string }[] = [];
@@ -91,8 +92,8 @@ export class BookTableComponent implements OnInit, OnDestroy, OnChanges {
       this.metadataCenterViewMode = user.userSettings.metadataCenterViewMode ?? 'route';
     }
 
-    this.selectedBookIds = this.preselectedBookIds;
-    this.selectedBooks = this.bookService.getBooksByIds([...this.selectedBookIds]);
+    this.selectedBookIds = new Set(this.preselectedBookIds);
+    this.syncSelectedBooks();
     this.setScrollHeight();
     window.addEventListener('resize', this.resizeListener);
   }
@@ -104,13 +105,34 @@ export class BookTableComponent implements OnInit, OnDestroy, OnChanges {
       : 'calc(100dvh - 150px)';
   }
 
-  ngOnChanges() {
+  ngOnChanges(changes: import('@angular/core').SimpleChanges) {
+    if (changes['preselectedBookIds'] || changes['books']) {
+      this.selectedBookIds = new Set(this.preselectedBookIds);
+      this.syncSelectedBooks();
+    }
+
     const wrapperElements = this.elementRef.nativeElement.querySelectorAll('.p-virtualscroller');
     wrapperElements.forEach((wrapperElement: Element) => {
       if (wrapperElement instanceof HTMLElement) {
         wrapperElement.style.height = 'calc(100dvh - 160px)';
       }
     });
+  }
+
+  private syncSelectedBooks(): void {
+    // Only include in 'selectedBooks' the objects that are actually in 'this.books'
+    // so that p-table correctly shows them as selected in the UI.
+    this.selectedBooks = this.books.filter(book => this.isBookSelected(book));
+  }
+
+  private getSelectableBookIds(book: Book): number[] {
+    return book.seriesBooks?.length
+      ? book.seriesBooks.map(seriesBook => seriesBook.id)
+      : [book.id];
+  }
+
+  private isBookSelected(book: Book): boolean {
+    return this.getSelectableBookIds(book).every(bookId => this.selectedBookIds.has(bookId));
   }
 
   scrollToTop(): void {
@@ -121,9 +143,9 @@ export class BookTableComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   selectAllBooks(): void {
-    this.selectedBookIds = new Set(this.books.map(book => book.id));
-    this.selectedBooks = [...this.books];
-    this.selectedBooksChange.emit(this.selectedBookIds);
+    // We delegate the "Select All" logic to the parent component
+    // which can fetch all book IDs from the API.
+    this.selectAllRequested.emit();
   }
 
   clearSelectedBooks(): void {
@@ -134,26 +156,24 @@ export class BookTableComponent implements OnInit, OnDestroy, OnChanges {
 
   onRowSelect(event: { data?: Book | Book[] }): void {
     if (event.data && !Array.isArray(event.data)) {
-      this.selectedBookIds.add(event.data.id);
-      this.selectedBooksChange.emit(this.selectedBookIds);
+      this.getSelectableBookIds(event.data).forEach(bookId => this.selectedBookIds.add(bookId));
+      this.selectedBooksChange.emit(new Set(this.selectedBookIds));
     }
   }
 
   onRowUnselect(event: { data?: Book | Book[] }): void {
     if (event.data && !Array.isArray(event.data)) {
-      this.selectedBookIds.delete(event.data.id);
-      this.selectedBooksChange.emit(this.selectedBookIds);
+      this.getSelectableBookIds(event.data).forEach(bookId => this.selectedBookIds.delete(bookId));
+      this.selectedBooksChange.emit(new Set(this.selectedBookIds));
     }
   }
 
   onHeaderCheckboxToggle(event: { checked: boolean }): void {
     if (event.checked) {
-      this.selectedBooks = [...this.books];
-      this.selectedBookIds = new Set(this.books.map(book => book.id));
+      this.selectAllRequested.emit();
     } else {
       this.clearSelectedBooks();
     }
-    this.selectedBooksChange.emit(this.selectedBookIds);
   }
 
   getStarColor(rating: number): string {

@@ -851,15 +851,9 @@ export class BookBrowserComponent implements AfterViewInit {
     this.appBooksApi.fetchAllBookIds().pipe(take(1)).subscribe({
       next: (allIds) => {
         this.bookSelectionService.selectAll(allIds);
-        if (this.bookTableComponent) {
-          this.bookTableComponent.selectAllBooks();
-        }
       },
       error: () => {
         this.bookSelectionService.selectAll();
-        if (this.bookTableComponent) {
-          this.bookTableComponent.selectAllBooks();
-        }
       }
     });
   }
