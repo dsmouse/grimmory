@@ -371,6 +371,22 @@
               }
             </div>
 
+            @if (book?.shelves?.length) {
+              <div class="metadata-item">
+                <span class="metadata-key">{{ t('shelvesLabel') }}</span>
+                <div class="metadata-value-group flex-wrap">
+                  @for (shelf of book.shelves; track shelf.id; let isLast = $last) {
+                    <span class="metadata-value metadata-link" role="button" tabindex="0" (click)="goToShelf(shelf.id!)" (keydown.enter)="goToShelf(shelf.id!)">
+                      {{ shelf.name }}
+                    </span>
+                    @if (!isLast) {
+                      <span class="separator">, </span>
+                    }
+                  }
+                </div>
+              </div>
+            }
+
             <div class="metadata-item">
               <span class="metadata-key">{{ t('publisherLabel') }}</span>
               @if (book?.metadata?.publisher) {
@@ -632,7 +648,7 @@
                   <p-button
                     icon="pi pi-chevron-left"
                     [disabled]="!canNavigatePrevious()"
-                    (onClick)="navigatePrevious()"`
+                    (onClick)="navigatePrevious()"
                     outlined
                     severity="secondary"
                     [pTooltip]="t('goToPreviousBook')"

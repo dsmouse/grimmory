@@ -109,6 +109,9 @@ export class BookFilterService {
     signals['amazonRating'] = computed(() => this.rangedFilters(this.appBooksApi.amazonRatingOptions(), ratingRanges));
     signals['goodreadsRating'] = computed(() => this.rangedFilters(this.appBooksApi.goodreadsRatingOptions(), ratingRanges));
     signals['hardcoverRating'] = computed(() => this.rangedFilters(this.appBooksApi.hardcoverRatingOptions(), ratingRanges));
+    signals['lubimyczytacRating'] = computed(() => this.rangedFilters(this.appBooksApi.lubimyczytacRatingOptions(), ratingRanges));
+    signals['ranobedbRating'] = computed(() => this.rangedFilters(this.appBooksApi.ranobedbRatingOptions(), ratingRanges));
+    signals['audibleRating'] = computed(() => this.rangedFilters(this.appBooksApi.audibleRatingOptions(), ratingRanges));
     signals['pageCount'] = computed(() => this.rangedFilters(this.appBooksApi.pageCountOptions(), pageCountRanges));
     signals['shelfStatus'] = computed(() => this.appBooksApi.shelfStatusOptions().map(item => ({
       value: {id: item.name, name: item.name.charAt(0).toUpperCase() + item.name.slice(1)},
@@ -199,6 +202,12 @@ export class BookFilterService {
         return this.rangedFilters(options.goodreadsRatings, ratingRanges);
       case 'hardcoverRating':
         return this.rangedFilters(options.hardcoverRatings, ratingRanges);
+      case 'lubimyczytacRating':
+        return this.rangedFilters(options.lubimyczytacRatings, ratingRanges);
+      case 'ranobedbRating':
+        return this.rangedFilters(options.ranobedbRatings, ratingRanges);
+      case 'audibleRating':
+        return this.rangedFilters(options.audibleRatings, ratingRanges);
       case 'pageCount':
         return this.rangedFilters(options.pageCounts, pageCountRanges);
       case 'shelfStatus':

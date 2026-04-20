@@ -675,6 +675,18 @@ public class AppBookSpecification {
         return buildRatingRangeSpec(rangeIds, mode, "hardcoverRating");
     }
 
+    public static Specification<BookEntity> withLubimyczytacRatings(List<String> rangeIds, String mode) {
+        return buildRatingRangeSpec(rangeIds, mode, "lubimyczytacRating");
+    }
+
+    public static Specification<BookEntity> withRanobedbRatings(List<String> rangeIds, String mode) {
+        return buildRatingRangeSpec(rangeIds, mode, "ranobedbRating");
+    }
+
+    public static Specification<BookEntity> withAudibleRatings(List<String> rangeIds, String mode) {
+        return buildRatingRangeSpec(rangeIds, mode, "audibleRating");
+    }
+
     private static Specification<BookEntity> buildRatingRangeSpec(
             List<String> rangeIds, String mode, String fieldName) {
         return (root, query, cb) -> {

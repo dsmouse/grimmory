@@ -53,6 +53,9 @@ export interface AppFilterOptions {
   amazonRatings: CountedOption[];
   goodreadsRatings: CountedOption[];
   hardcoverRatings: CountedOption[];
+  lubimyczytacRatings: CountedOption[];
+  ranobedbRatings: CountedOption[];
+  audibleRatings: CountedOption[];
   pageCounts: CountedOption[];
   shelfStatuses: CountedOption[];
   comicCharacters: CountedOption[];
@@ -101,6 +104,9 @@ export interface AppBookFilters {
   amazonRating?: string[];
   goodreadsRating?: string[];
   hardcoverRating?: string[];
+  lubimyczytacRating?: string[];
+  ranobedbRating?: string[];
+  audibleRating?: string[];
   pageCount?: string[];
   shelfStatus?: string[];
   comicCharacter?: string[];

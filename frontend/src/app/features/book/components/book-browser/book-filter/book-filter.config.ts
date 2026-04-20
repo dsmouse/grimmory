@@ -19,7 +19,8 @@ export type FilterType =
   | 'author' | 'category' | 'series' | 'bookType' | 'readStatus'
   | 'personalRating' | 'publisher' | 'matchScore' | 'library' | 'shelf'
   | 'shelfStatus' | 'tag' | 'publishedDate' | 'fileSize' | 'amazonRating'
-  | 'goodreadsRating' | 'hardcoverRating' | 'language' | 'pageCount' | 'mood'
+  | 'goodreadsRating' | 'hardcoverRating' | 'lubimyczytacRating' | 'ranobedbRating'
+  | 'audibleRating' | 'language' | 'pageCount' | 'mood'
   | 'ageRating' | 'contentRating'
   | 'narrator'
   | 'comicCharacter' | 'comicTeam' | 'comicLocation' | 'comicCreator';
@@ -133,7 +134,8 @@ export const ageRatingRanges = AGE_RATING_OPTIONS;
 
 export const NUMERIC_ID_FILTER_TYPES = new Set<FilterType>([
   'personalRating', 'matchScore', 'fileSize', 'amazonRating',
-  'goodreadsRating', 'hardcoverRating', 'pageCount', 'library', 'shelf',
+  'goodreadsRating', 'hardcoverRating', 'lubimyczytacRating', 'ranobedbRating',
+  'audibleRating', 'pageCount', 'library', 'shelf',
   'ageRating'
 ]);
 
@@ -155,6 +157,9 @@ export const FILTER_LABELS: Readonly<Record<FilterType, string>> = {
   amazonRating: 'Amazon Rating',
   goodreadsRating: 'Goodreads Rating',
   hardcoverRating: 'Hardcover Rating',
+  lubimyczytacRating: 'Lubimyczytac Rating',
+  ranobedbRating: 'RanobeDB Rating',
+  audibleRating: 'Audible Rating',
   language: 'Language',
   pageCount: 'Page Count',
   mood: 'Mood',
@@ -223,6 +228,9 @@ export const FILTER_EXTRACTORS: Readonly<Record<Exclude<FilterType, 'library'>, 
   amazonRating: (book) => findInRange(book.metadata?.amazonRating, RATING_RANGES_5),
   goodreadsRating: (book) => findInRange(book.metadata?.goodreadsRating, RATING_RANGES_5),
   hardcoverRating: (book) => findInRange(book.metadata?.hardcoverRating, RATING_RANGES_5),
+  lubimyczytacRating: (book) => findInRange(book.metadata?.lubimyczytacRating, RATING_RANGES_5),
+  ranobedbRating: (book) => findInRange(book.metadata?.ranobedbRating, RATING_RANGES_5),
+  audibleRating: (book) => findInRange(book.metadata?.audibleRating, RATING_RANGES_5),
   language: (book) => extractSingleString(book.metadata?.language),
   pageCount: (book) => findInRange(book.metadata?.pageCount, PAGE_COUNT_RANGES),
   mood: (book) => extractStringsAsFilters(book.metadata?.moods),
@@ -283,6 +291,9 @@ export const FILTER_LABEL_KEYS: Readonly<Record<FilterType, string>> = {
   amazonRating: 'book.filter.labels.amazonRating',
   goodreadsRating: 'book.filter.labels.goodreadsRating',
   hardcoverRating: 'book.filter.labels.hardcoverRating',
+  lubimyczytacRating: 'book.filter.labels.lubimyczytacRating',
+  ranobedbRating: 'book.filter.labels.ranobedbRating',
+  audibleRating: 'book.filter.labels.audibleRating',
   language: 'book.filter.labels.language',
   pageCount: 'book.filter.labels.pageCount',
   mood: 'book.filter.labels.mood',
@@ -347,6 +358,9 @@ export const FILTER_CONFIGS: Readonly<Record<Exclude<FilterType, 'library'>, Omi
   amazonRating: {label: 'Amazon Rating', sortMode: 'sortIndex', isNumericId: true},
   goodreadsRating: {label: 'Goodreads Rating', sortMode: 'sortIndex', isNumericId: true},
   hardcoverRating: {label: 'Hardcover Rating', sortMode: 'sortIndex', isNumericId: true},
+  lubimyczytacRating: {label: 'Lubimyczytac Rating', sortMode: 'sortIndex', isNumericId: true},
+  ranobedbRating: {label: 'RanobeDB Rating', sortMode: 'sortIndex', isNumericId: true},
+  audibleRating: {label: 'Audible Rating', sortMode: 'sortIndex', isNumericId: true},
   language: {label: 'Language', sortMode: 'count'},
   pageCount: {label: 'Page Count', sortMode: 'sortIndex', isNumericId: true},
   mood: {label: 'Mood', sortMode: 'count'},

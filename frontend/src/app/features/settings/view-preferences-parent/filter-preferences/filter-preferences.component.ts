@@ -9,7 +9,7 @@ import {Tooltip} from 'primeng/tooltip';
 import {TranslocoDirective, TranslocoPipe, TranslocoService} from '@jsverse/transloco';
 
 const MIN_VISIBLE_FILTERS = 5;
-const MAX_VISIBLE_FILTERS = 20;
+const MAX_VISIBLE_FILTERS = 50;
 type MutableSettingsBranch = Record<string, unknown>;
 
 @Component({

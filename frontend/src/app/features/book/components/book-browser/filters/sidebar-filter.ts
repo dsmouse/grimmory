@@ -121,6 +121,12 @@ export function doesBookMatchFilter(
       return filterValues.some(range => isRatingInRange(book.metadata?.goodreadsRating, range as string | number));
     case 'hardcoverRating':
       return filterValues.some(range => isRatingInRange(book.metadata?.hardcoverRating, range as string | number));
+    case 'lubimyczytacRating':
+      return filterValues.some(range => isRatingInRange(book.metadata?.lubimyczytacRating, range as string | number));
+    case 'ranobedbRating':
+      return filterValues.some(range => isRatingInRange(book.metadata?.ranobedbRating, range as string | number));
+    case 'audibleRating':
+      return filterValues.some(range => isRatingInRange(book.metadata?.audibleRating, range as string | number));
     case 'language':
       return filterValues.includes(book.metadata?.language);
     case 'pageCount':

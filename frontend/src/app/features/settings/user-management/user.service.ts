@@ -224,7 +224,8 @@ export type VisibleFilterType =
   | 'author' | 'category' | 'series' | 'bookType' | 'readStatus'
   | 'personalRating' | 'publisher' | 'matchScore' | 'library' | 'shelf'
   | 'shelfStatus' | 'tag' | 'publishedDate' | 'fileSize' | 'amazonRating'
-  | 'goodreadsRating' | 'hardcoverRating' | 'language' | 'pageCount' | 'mood'
+  | 'goodreadsRating' | 'hardcoverRating' | 'lubimyczytacRating' | 'ranobedbRating'
+  | 'audibleRating' | 'language' | 'pageCount' | 'mood'
   | 'ageRating' | 'contentRating'
   | 'narrator'
   | 'comicCharacter' | 'comicTeam' | 'comicLocation' | 'comicCreator';
@@ -232,9 +233,11 @@ export type VisibleFilterType =
 export const DEFAULT_VISIBLE_FILTERS: VisibleFilterType[] = [
   'author', 'category', 'series', 'bookType', 'readStatus',
   'personalRating', 'amazonRating', 'goodreadsRating', 'hardcoverRating',
-  'library', 'tag', 'ageRating', 'contentRating',
+  'lubimyczytacRating', 'ranobedbRating', 'audibleRating',
+  'library', 'shelf', 'tag', 'ageRating', 'contentRating',
   'matchScore', 'publisher', 'publishedDate', 'fileSize',
-  'pageCount', 'shelfStatus', 'language', 'mood', 'narrator'
+  'pageCount', 'shelfStatus', 'language', 'mood', 'narrator',
+  'comicCharacter', 'comicTeam', 'comicLocation', 'comicCreator'
 ];
 
 // Translation key for each filter option — use book.filter.labels.<value>
@@ -243,7 +246,8 @@ export const ALL_FILTER_OPTION_VALUES: VisibleFilterType[] = [
   'personalRating', 'library', 'tag', 'ageRating', 'contentRating',
   'matchScore', 'publisher', 'publishedDate', 'fileSize', 'shelf',
   'shelfStatus', 'language', 'pageCount', 'mood', 'amazonRating',
-  'goodreadsRating', 'hardcoverRating', 'narrator',
+  'goodreadsRating', 'hardcoverRating', 'lubimyczytacRating', 'ranobedbRating',
+  'audibleRating', 'narrator',
   'comicCharacter', 'comicTeam', 'comicLocation', 'comicCreator'
 ];
 
@@ -270,6 +274,9 @@ export const ALL_FILTER_OPTIONS: { label: string; value: VisibleFilterType }[] =
   { label: 'Amazon Rating', value: 'amazonRating' },
   { label: 'Goodreads Rating', value: 'goodreadsRating' },
   { label: 'Hardcover Rating', value: 'hardcoverRating' },
+  { label: 'Lubimyczytac Rating', value: 'lubimyczytacRating' },
+  { label: 'RanobeDB Rating', value: 'ranobedbRating' },
+  { label: 'Audible Rating', value: 'audibleRating' },
   { label: 'Narrator', value: 'narrator' },
   { label: 'Comic Character', value: 'comicCharacter' },
   { label: 'Comic Team', value: 'comicTeam' },

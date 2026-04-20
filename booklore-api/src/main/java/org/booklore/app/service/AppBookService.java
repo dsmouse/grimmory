@@ -585,6 +585,9 @@ public class AppBookService {
         List<AppFilterOptions.CountedOption> amazonRatings = queryRatingBuckets("m.amazonRating", scopeClause, accessibleLibraryIds, libraryId, shelfId, magicBookIds);
         List<AppFilterOptions.CountedOption> goodreadsRatings = queryRatingBuckets("m.goodreadsRating", scopeClause, accessibleLibraryIds, libraryId, shelfId, magicBookIds);
         List<AppFilterOptions.CountedOption> hardcoverRatings = queryRatingBuckets("m.hardcoverRating", scopeClause, accessibleLibraryIds, libraryId, shelfId, magicBookIds);
+        List<AppFilterOptions.CountedOption> lubimyczytacRatings = queryRatingBuckets("m.lubimyczytacRating", scopeClause, accessibleLibraryIds, libraryId, shelfId, magicBookIds);
+        List<AppFilterOptions.CountedOption> ranobedbRatings = queryRatingBuckets("m.ranobedbRating", scopeClause, accessibleLibraryIds, libraryId, shelfId, magicBookIds);
+        List<AppFilterOptions.CountedOption> audibleRatings = queryRatingBuckets("m.audibleRating", scopeClause, accessibleLibraryIds, libraryId, shelfId, magicBookIds);
 
         List<AppFilterOptions.CountedOption> pageCounts = queryGroupedCount(
                 "CASE " +
@@ -663,6 +666,9 @@ public class AppBookService {
                 .amazonRatings(amazonRatings)
                 .goodreadsRatings(goodreadsRatings)
                 .hardcoverRatings(hardcoverRatings)
+                .lubimyczytacRatings(lubimyczytacRatings)
+                .ranobedbRatings(ranobedbRatings)
+                .audibleRatings(audibleRatings)
                 .pageCounts(pageCounts)
                 .shelfStatuses(shelfStatuses)
                 .comicCharacters(comicCharacters)
@@ -697,6 +703,9 @@ public class AppBookService {
                 .amazonRatings(Collections.emptyList())
                 .goodreadsRatings(Collections.emptyList())
                 .hardcoverRatings(Collections.emptyList())
+                .lubimyczytacRatings(Collections.emptyList())
+                .ranobedbRatings(Collections.emptyList())
+                .audibleRatings(Collections.emptyList())
                 .pageCounts(Collections.emptyList())
                 .shelfStatuses(Collections.emptyList())
                 .comicCharacters(Collections.emptyList())
@@ -955,6 +964,27 @@ public class AppBookService {
             List<String> cleaned = BookListRequest.cleanValues(req.hardcoverRating());
             if (!cleaned.isEmpty()) {
                 specs.add(AppBookSpecification.withHardcoverRatings(cleaned, req.effectiveFilterMode()));
+            }
+        }
+
+        if (req.lubimyczytacRating() != null && !req.lubimyczytacRating().isEmpty()) {
+            List<String> cleaned = BookListRequest.cleanValues(req.lubimyczytacRating());
+            if (!cleaned.isEmpty()) {
+                specs.add(AppBookSpecification.withLubimyczytacRatings(cleaned, req.effectiveFilterMode()));
+            }
+        }
+
+        if (req.ranobedbRating() != null && !req.ranobedbRating().isEmpty()) {
+            List<String> cleaned = BookListRequest.cleanValues(req.ranobedbRating());
+            if (!cleaned.isEmpty()) {
+                specs.add(AppBookSpecification.withRanobedbRatings(cleaned, req.effectiveFilterMode()));
+            }
+        }
+
+        if (req.audibleRating() != null && !req.audibleRating().isEmpty()) {
+            List<String> cleaned = BookListRequest.cleanValues(req.audibleRating());
+            if (!cleaned.isEmpty()) {
+                specs.add(AppBookSpecification.withAudibleRatings(cleaned, req.effectiveFilterMode()));
             }
         }
 
