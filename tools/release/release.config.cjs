@@ -1,7 +1,6 @@
 const releasePolicy = require("./release-policy.cjs");
 
 module.exports = {
-  repositoryUrl: "https://github.com/grimmory-tools/grimmory.git",
   branches: ["main"],
   tagFormat: "v${version}",
   plugins: [
@@ -33,19 +32,6 @@ module.exports = {
         writerOpts: {
           commitsSort: releasePolicy.writerSortFields
         }
-      }
-    ],
-    [
-      "@semantic-release/changelog",
-      {
-        changelogFile: "CHANGELOG.md"
-      }
-    ],
-    [
-      "@semantic-release/git",
-      {
-        assets: ["CHANGELOG.md"],
-        message: "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }
     ],
     [
