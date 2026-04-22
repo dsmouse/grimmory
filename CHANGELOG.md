@@ -1,3 +1,9 @@
+## [2.3.1](https://github.com/grimmory-tools/grimmory/compare/v2.3.0...v2.3.1) (2026-04-22)
+
+### Bug Fixes
+
+* **reader:** remove foliate allow-scripts and add CSP for EPUB resources ([5448205](https://github.com/grimmory-tools/grimmory/commit/5448205045bc893d0cb80e8bf6cacf91d57079f2))
+
 ## [2.3.0](https://github.com/grimmory-tools/grimmory/compare/v2.2.6...v2.3.0) (2026-03-21)
 
 ### Features
