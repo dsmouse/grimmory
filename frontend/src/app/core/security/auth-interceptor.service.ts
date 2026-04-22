@@ -1,9 +1,9 @@
-import {HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpInterceptorFn, HttpRequest} from '@angular/common/http';
-import {inject} from '@angular/core';
-import {catchError, filter, switchMap, take} from 'rxjs/operators';
-import {BehaviorSubject, Observable, throwError, defer} from 'rxjs';
-import {AuthService} from '../../shared/service/auth.service';
-import {API_CONFIG} from '../config/api-config';
+import { HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { catchError, filter, switchMap, take } from 'rxjs/operators';
+import { BehaviorSubject, Observable, throwError, defer } from 'rxjs';
+import { AuthService } from '../../shared/service/auth.service';
+import { API_CONFIG } from '../config/api-config';
 
 let isRefreshing = false;
 const refreshTokenSubject = new BehaviorSubject<string | null>(null);
@@ -22,6 +22,7 @@ export const AuthInterceptorService: HttpInterceptorFn = (req, next: HttpHandler
     '/api/v1/auth/oidc/redirect',
     '/api/v1/auth/oidc/mobile/callback',
     '/api/v1/auth/oidc/backchannel-logout',
+    '/api/v1/public-settings',
   ];
   const urlPath = req.url.split('?')[0];
   const isAuthRequest = authExcludePaths.some(path => urlPath === `${API_CONFIG.BASE_URL}${path}`);

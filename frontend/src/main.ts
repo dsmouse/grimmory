@@ -1,4 +1,5 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { ErrorHandler, inject, isDevMode, provideAppInitializer, provideZonelessChangeDetection } from '@angular/core';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { RxStompService } from './app/shared/websocket/rx-stomp.service';
@@ -12,7 +13,8 @@ import Aura from './app/shared/layout/theme-palette-extend';
 import { routes } from './app/app.routes';
 import { AuthInterceptorService } from './app/core/security/auth-interceptor.service';
 import { AuthService, websocketInitializer } from './app/shared/service/auth.service';
-import { inject, isDevMode, provideAppInitializer, provideZonelessChangeDetection } from '@angular/core';
+import { GlobalErrorHandler } from './app/core/errors/global-error-handler';
+import { PwaUpdateService } from './app/core/services/pwa-update.service';
 import { initializeAuthFactory } from './app/core/security/auth-initializer';
 import { StartupService } from './app/shared/service/startup.service';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
@@ -80,6 +82,10 @@ bootstrapApplication(AppComponent, {
     }), provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000'
+    }),
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
+    provideAppInitializer(() => {
+      inject(PwaUpdateService);
     })
   ]
 }).catch(err => console.error(err));
