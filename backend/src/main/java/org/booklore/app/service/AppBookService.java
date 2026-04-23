@@ -1044,6 +1044,11 @@ public class AppBookService {
             }
         }
 
+        // For `lastReadTime` sorting we need to filter to only the current user's progress.
+        if ("lastreadtime".equalsIgnoreCase(req.sort())) {
+            specs.add(AppBookSpecification.withProgress(userId, true));
+        }
+
         return AppBookSpecification.combine(specs.toArray(new Specification[0]));
     }
 
@@ -1061,7 +1066,7 @@ public class AppBookService {
             case "publisher" -> "metadata.publisher";
             case "language" -> "metadata.language";
             case "publisheddate" -> "metadata.publishedDate";
-            case "lastreadtime" -> "lastReadTime";
+            case "lastreadtime" -> "userBookProgress.lastReadTime";
             case "pagecount" -> "metadata.pageCount";
             default -> "addedOn";
         };
