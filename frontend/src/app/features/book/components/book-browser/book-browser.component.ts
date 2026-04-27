@@ -307,7 +307,6 @@ export class BookBrowserComponent implements AfterViewInit {
   );
   private readonly virtualGridGap = computed(() => this.isMobile() ? this.MOBILE_GAP : this.GRID_GAP);
   private readonly virtualGridColumns = computed(() => this.isMobile() ? this.mobileColumnCount() : undefined);
-  private readonly isGridView = computed(() => this.currentViewMode() === VIEW_MODES.GRID);
   private readonly virtualBookCount = computed(() => {
     const renderedBookCount = this.gridBooks().length;
     return this.appBooksApi.hasNextPage()
@@ -321,7 +320,6 @@ export class BookBrowserComponent implements AfterViewInit {
     gap: this.virtualGridGap,
     columns: this.virtualGridColumns,
     count: this.virtualBookCount,
-    enabled: this.isGridView,
     initialOffset: this.initialScrollOffset,
     fillItemWidth: true,
     estimateItemHeight: itemWidth => this.isMobile()
