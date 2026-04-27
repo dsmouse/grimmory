@@ -24,7 +24,6 @@
   "dependencies": {
     "@angular/animations": "^21.2.10",
     "@angular/cdk": "^21.2.8",
-    "@angular/cdk-experimental": "^21.2.8",
     "@angular/common": "^21.2.10",
     "@angular/compiler": "^21.2.10",
     "@angular/core": "^21.2.10",
@@ -40,6 +39,7 @@
     "@stomp/rx-stomp": "^2.3.0",
     "@stomp/stompjs": "^7.3.0",
     "@tanstack/angular-query-experimental": "5.100.1",
+    "@tanstack/angular-virtual": "^4.0.13",
     "chart.js": "^4.5.1",
     "chartjs-chart-matrix": "^3.0.0",
     "chartjs-plugin-datalabels": "^2.2.0",

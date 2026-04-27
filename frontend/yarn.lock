@@ -487,18 +487,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/cdk-experimental@npm:^21.2.8":
-  version: 21.2.8
-  resolution: "@angular/cdk-experimental@npm:21.2.8"
-  dependencies:
-    tslib: "npm:^2.3.0"
-  peerDependencies:
-    "@angular/cdk": 21.2.8
-    "@angular/core": ^21.0.0 || ^22.0.0
-  checksum: 10c0/7db17924936b179d7ab5dc43b1cfc69879880d3d255c6091b4a54f2248f1c30d57fdc8d7b1ce982182c8f856f8c85c574cbf72d36125f6c161ae2342e1c24359
-  languageName: node
-  linkType: hard
-
 "@angular/cdk@npm:^21.2.8":
   version: 21.2.8
   resolution: "@angular/cdk@npm:21.2.8"
@@ -3870,6 +3858,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tanstack/angular-virtual@npm:^4.0.13":
+  version: 4.0.13
+  resolution: "@tanstack/angular-virtual@npm:4.0.13"
+  dependencies:
+    "@tanstack/virtual-core": "npm:3.14.0"
+    tslib: "npm:^2.8.1"
+  peerDependencies:
+    "@angular/core": ">=18.1.0"
+  checksum: 10c0/da9b7bf676d3f2553c09b4be3c36716525d9ce90168b0380f4eb0217ee3fd5400c253936f1d5e8293503da04b221f25b5274fbaebb125b20fba481db5a425f9f
+  languageName: node
+  linkType: hard
+
 "@tanstack/query-core@npm:5.100.1":
   version: 5.100.1
   resolution: "@tanstack/query-core@npm:5.100.1"
@@ -3881,6 +3881,13 @@ __metadata:
   version: 5.100.1
   resolution: "@tanstack/query-devtools@npm:5.100.1"
   checksum: 10c0/d35bec159ad4747162b6272e7acea86ba873c9533440cd2bea67b7024ad9ca7b7a23ebbe972d403ef2173a510345aba2489d8ed0b13c1a414ee934947afda486
+  languageName: node
+  linkType: hard
+
+"@tanstack/virtual-core@npm:3.14.0":
+  version: 3.14.0
+  resolution: "@tanstack/virtual-core@npm:3.14.0"
+  checksum: 10c0/9e07e7f74f5e02dfc47b358f7b5089e680d8b14b9c5b90e9497be6f57c76ca98d185fbe5008795b89919346bfc3676ebe1c61b34980eefe6674c88ec6ff4b136
   languageName: node
   linkType: hard
 
@@ -6268,7 +6275,6 @@ __metadata:
     "@angular/animations": "npm:^21.2.10"
     "@angular/build": "npm:^21.2.8"
     "@angular/cdk": "npm:^21.2.8"
-    "@angular/cdk-experimental": "npm:^21.2.8"
     "@angular/cli": "npm:^21.2.8"
     "@angular/common": "npm:^21.2.10"
     "@angular/compiler": "npm:^21.2.10"
@@ -6288,6 +6294,7 @@ __metadata:
     "@stomp/rx-stomp": "npm:^2.3.0"
     "@stomp/stompjs": "npm:^7.3.0"
     "@tanstack/angular-query-experimental": "npm:5.100.1"
+    "@tanstack/angular-virtual": "npm:^4.0.13"
     "@testing-library/angular": "npm:^19.2.1"
     "@testing-library/dom": "npm:^10.4.1"
     "@testing-library/jest-dom": "npm:^6.9.1"
