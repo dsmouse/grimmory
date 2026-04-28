@@ -40,10 +40,10 @@ public class ComicvineBookParser implements BookParser, DetailedMetadataProvider
     private static final String COMICVINE_URL = "https://comicvine.gamespot.com/api/";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final Pattern DIGIT_PATTERN = Pattern.compile("\\d+");
-    private static final Pattern SERIES_ISSUE_PATTERN = Pattern.compile("^(.+?)\\s+#?(\\d+(?:\\.\\d+)?)(?:\\s|$)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern SERIES_ISSUE_NUMBER_PATTERN = Pattern.compile("\\s#?(\\d+(?:\\.\\d+)?)");
     private static final Pattern DIGITAL_PATTERN = Pattern.compile("\\(digital\\)", Pattern.CASE_INSENSITIVE);
-    private static final Pattern PARENTHETICAL_PATTERN = Pattern.compile("\\([^)]*\\)");
-    private static final Pattern BRACKETED_PATTERN = Pattern.compile("\\[[^\\]]*\\]");
+    private static final Pattern PARENTHETICAL_PATTERN = Pattern.compile("\\([^()]*\\)");
+    private static final Pattern BRACKETED_PATTERN = Pattern.compile("\\[[^\\[\\]]*\\]");
     private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s+");
     private static final Pattern SPECIAL_ISSUE_PATTERN = Pattern.compile("(annual|special|one-?shot)\\s+(\\d+)", Pattern.CASE_INSENSITIVE);
     private static final Pattern YEAR_PATTERN = Pattern.compile("\\(?(\\d{4})\\)?");
@@ -54,8 +54,7 @@ public class ComicvineBookParser implements BookParser, DetailedMetadataProvider
     private static final String ISSUE_DETAIL_FIELDS = "api_detail_url,cover_date,store_date,description,deck,id,image,issue_number,name,person_credits,volume,site_detail_url,aliases,character_credits,team_credits,story_arc_credits,location_credits";
     private static final String SEARCH_FIELDS = "api_detail_url,cover_date,store_date,description,deck,id,image,issue_number,name,publisher,volume,site_detail_url,resource_type,start_year,count_of_issues,aliases,person_credits";
     private static final Pattern ISSUE_NUMBER_PATTERN = Pattern.compile("issue\\s*#?\\d+");
-    private static final Pattern ID_FORMAT_PATTERN = Pattern.compile("\\d+-?\\d*");
-    private static final Pattern TRAILING_SLASHES_PATTERN = Pattern.compile("/+$");
+    private static final Pattern ID_FORMAT_PATTERN = Pattern.compile("\\d+(-\\d+)?");
     private static final Pattern VOLUME_SUFFIX_PATTERN = Pattern.compile("\\s+Vol\\.?\\s*\\d+$");
 
     private static final String RESOURCE_TYPE_ISSUE = "4000";
@@ -608,8 +607,15 @@ public class ComicvineBookParser implements BookParser, DetailedMetadataProvider
     private String extractEndpointFromUri(URI uri) {
         String path = uri.getPath();
         if (path == null || path.isEmpty()) return "unknown";
-        
-        path = TRAILING_SLASHES_PATTERN.matcher(path).replaceAll("");
+
+        // Avoid a regular expression to avoid the "polynomial regex" vuln
+        // that keeps getting reported by CodeQL.
+        int end = path.length();
+        while (end != 0  && path.charAt(end - 1) == '/') {
+            end--;
+        }
+        path = path.substring(0, end);
+
         int lastSlash = path.lastIndexOf('/');
         if (lastSlash >= 0 && lastSlash < path.length() - 1) {
             String segment = path.substring(lastSlash + 1);
@@ -914,19 +920,17 @@ public class ComicvineBookParser implements BookParser, DetailedMetadataProvider
             }
         }
 
-        Matcher matcher = SERIES_ISSUE_PATTERN.matcher(cleaned);
+        Matcher matcher = SERIES_ISSUE_NUMBER_PATTERN.matcher(cleaned);
         if (matcher.find()) {
-            String series = matcher.group(1).trim();
-            String issueNum = matcher.group(2);
-            
-            if (series.endsWith("#")) {
-                series = series.substring(0, series.length() - 1).trim();
-            }
+            String series = cleaned.substring(0, matcher.start()).trim();
+            String issueNum = matcher.group(1).trim();
 
             String remainder = cleaned.substring(matcher.end()).trim();
 
-            log.debug("Extracted - Series: '{}', Issue: '{}', Remainder: '{}'", series, issueNum, remainder);
-            return new SeriesAndIssue(series, issueNum, year, null, remainder);
+            if (!series.isBlank()) {
+                log.debug("Extracted - Series: '{}', Issue: '{}', Remainder: '{}'", series, issueNum, remainder);
+                return new SeriesAndIssue(series, issueNum, year, null, remainder);
+            }
         }
         
         log.debug("No issue number found in: '{}'", cleaned);
