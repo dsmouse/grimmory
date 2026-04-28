@@ -132,14 +132,12 @@ public class CbxMetadataExtractor implements FileMetadataExtractor {
             builder.authors(authors);
         }
 
-        Set<String> categories = new HashSet<>();
-        categories.addAll(splitValues(getTextContent(document, "Genre")));
+        Set<String> categories = splitValues(getTextContent(document, "Genre"));
         if (!categories.isEmpty()) {
             builder.categories(categories);
         }
 
-        Set<String> tags = new HashSet<>();
-        tags.addAll(splitValues(getTextContent(document, "Tags")));
+        Set<String> tags = splitValues(getTextContent(document, "Tags"));
         if (!tags.isEmpty()) {
             builder.tags(tags);
         }
