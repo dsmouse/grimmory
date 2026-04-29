@@ -100,7 +100,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-mail")
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+    implementation("com.nimbusds:nimbus-jose-jwt:10.9")
 
     // --- Reactive Streams ---
     implementation("io.projectreactor:reactor-core")
@@ -109,11 +109,6 @@ dependencies {
     implementation("org.mariadb.jdbc:mariadb-java-client:3.5.8")
     implementation("org.springframework.boot:spring-boot-starter-flyway")
     implementation("org.flywaydb:flyway-mysql:12.4.0")
-
-    // --- Security & Authentication ---
-    implementation("io.jsonwebtoken:jjwt-api:0.13.0")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0")
 
     // --- Lombok (For Clean Code) ---
     compileOnly("org.projectlombok:lombok:1.18.46")
