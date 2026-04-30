@@ -115,7 +115,7 @@ public class AudiobookMetadataExtractor implements FileMetadataExtractor {
                     if (yearInt >= 1 && yearInt <= 9999) {
                         builder.publishedDate(LocalDate.of(yearInt, 1, 1));
                     }
-                } catch (NumberFormatException ignored) {
+                } catch (NumberFormatException _) {
                 }
             }
 
@@ -141,7 +141,7 @@ public class AudiobookMetadataExtractor implements FileMetadataExtractor {
                 try {
                     String trackNum = trackNo.contains("/") ? trackNo.split("/")[0] : trackNo;
                     builder.seriesNumber((float) Integer.parseInt(trackNum.trim()));
-                } catch (NumberFormatException ignored) {
+                } catch (NumberFormatException _) {
                 }
             }
 
@@ -149,7 +149,7 @@ public class AudiobookMetadataExtractor implements FileMetadataExtractor {
             if (StringUtils.isNotBlank(trackTotal)) {
                 try {
                     builder.seriesTotal(Integer.parseInt(trackTotal.trim()));
-                } catch (NumberFormatException ignored) {
+                } catch (NumberFormatException _) {
                 }
             }
 
@@ -328,7 +328,7 @@ public class AudiobookMetadataExtractor implements FileMetadataExtractor {
                     return str;
                 }
             }
-        } catch (Exception ignored) {
+        } catch (Exception _) {
         }
 
         return "Chapter " + (index + 1);

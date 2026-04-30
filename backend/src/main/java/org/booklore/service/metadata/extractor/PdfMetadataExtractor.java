@@ -259,7 +259,7 @@ public class PdfMetadataExtractor implements FileMetadataExtractor {
                 if (StringUtils.isNotBlank(tags)) {
                     Arrays.stream(tags.split(";")).map(String::trim).forEach(knownNonCategories::add);
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception _) {}
             
             subjects.removeAll(knownNonCategories);
             

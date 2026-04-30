@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 public class ArchiveService {
     private static final int LOCK_STRIPE_COUNT = 256;
     private final ReentrantLock[] lockStripes = IntStream.range(0, LOCK_STRIPE_COUNT)
-            .mapToObj(ignored -> new ReentrantLock())
+            .mapToObj(_ -> new ReentrantLock())
             .toArray(ReentrantLock[]::new);
 
     // Route through the JVM-wide serialized native loader.
