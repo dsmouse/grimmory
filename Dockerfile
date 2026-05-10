@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1-labs
 FROM --platform=$BUILDPLATFORM node:24-alpine AS frontend-build
 
 WORKDIR /workspace/frontend
