@@ -1,24 +1,31 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
-import { effect, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
-import { $t } from '@primeuix/themes';
-import { FaviconService } from '../layout/theme-configurator/favicon-service';
-import Aura from '../layout/theme-palette-extend';
-import { AppState } from '../model/app-state.model';
+import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
+import { FaviconService } from '../layout/theme/favicon-service';
+import {applyPrimeTheme, primeThemeTokenPalettes} from '../layout/theme/theme-palette-extend';
+import {
+  APP_THEME_OPTIONS,
+  AppearancePreference,
+  AppState,
+  AppTheme,
+  CUSTOM_PRIMARY_OPTIONS,
+  CustomPrimary,
+  DEFAULT_APP_THEME,
+  DEFAULT_CUSTOM_PRIMARY,
+} from '../model/app-state.model';
 
-type ColorPalette = Record<string, string>;
+const PRIMARY_COLOR_STOPS = ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'];
+const DEFAULT_APPEARANCE_PREFERENCE: AppearancePreference = 'system';
+const LEGACY_APPEARANCE_PREFERENCE: AppearancePreference = 'dark';
 
-const COLOR_STOPS = ['0', '50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'];
+type StoredAppState = Partial<AppState> & {
+  preset?: unknown;
+  primary?: unknown;
+  surface?: unknown;
+};
 
-interface Palette {
-  name: string;
-  palette: ColorPalette;
-}
-
-interface ResolvedThemePalettes {
-  primary: ColorPalette;
-  surface: ColorPalette;
-  appPrimary: ColorPalette;
-  isNoir: boolean;
+interface LoadedAppState {
+  state: AppState;
+  shouldPersist: boolean;
 }
 
 @Injectable({
@@ -26,539 +33,193 @@ interface ResolvedThemePalettes {
 })
 export class AppConfigService {
   private readonly STORAGE_KEY = 'appConfigState';
-  appState = signal<AppState>({});
+  readonly themes = APP_THEME_OPTIONS;
+  private readonly appStateSignal = signal<AppState>({});
+  readonly appState = this.appStateSignal.asReadonly();
   document = inject(DOCUMENT);
   platformId = inject(PLATFORM_ID);
   faviconService = inject(FaviconService);
-  private initialized = false;
-
-  readonly surfaces: Palette[] = [
-    {
-      name: 'slate',
-      palette: {
-        0: '#ffffff',
-        50: '#f8fafc',
-        100: '#f1f5f9',
-        200: '#e2e8f0',
-        300: '#cbd5e1',
-        400: '#94a3b8',
-        500: '#64748b',
-        600: '#475569',
-        700: '#334155',
-        800: '#283548',
-        900: '#0f172a',
-        950: '#020617'
-      }
-    },
-    {
-      name: 'gray',
-      palette: {
-        0: '#ffffff',
-        50: '#fafafa',
-        100: '#f4f4f5',
-        200: '#e4e4e7',
-        300: '#d4d4d8',
-        400: '#a1a1aa',
-        500: '#71717a',
-        600: '#52525b',
-        700: '#3f3f46',
-        800: '#313136',
-        900: '#18181b',
-        950: '#09090b'
-      }
-    },
-    {
-      name: 'neutral',
-      palette: {
-        0: '#ffffff',
-        50: '#fafafa',
-        100: '#f5f5f5',
-        200: '#e5e5e5',
-        300: '#d4d4d4',
-        400: '#a3a3a3',
-        500: '#737373',
-        600: '#525252',
-        700: '#404040',
-        800: '#303030',
-        900: '#171717',
-        950: '#0a0a0a'
-      }
-    },
-    {
-      name: 'zinc',
-      palette: {
-        0: '#ffffff',
-        50: '#fafafa',
-        100: '#f4f4f5',
-        200: '#e4e4e7',
-        300: '#d4d4d8',
-        400: '#a1a1aa',
-        500: '#71717a',
-        600: '#52525b',
-        700: '#3f3f46',
-        800: '#313136',
-        900: '#18181b',
-        950: '#09090b'
-      }
-    },
-    {
-      name: 'stone',
-      palette: {
-        0: '#ffffff',
-        50: '#fafaf9',
-        100: '#f5f5f4',
-        200: '#e7e5e4',
-        300: '#d6d3d1',
-        400: '#a8a29e',
-        500: '#78716c',
-        600: '#57534e',
-        700: '#44403c',
-        800: '#342f2b',
-        900: '#1c1917',
-        950: '#0c0a09'
-      }
-    },
-    {
-      name: 'iron',
-      palette: {
-        0: '#ffffff',
-        50: '#f1f3f4',
-        100: '#e3e5e6',
-        200: '#d2d4d6',
-        300: '#b8bbc0',
-        400: '#9ca0a6',
-        500: '#7d8288',
-        600: '#646a70',
-        700: '#4c5258',
-        800: '#353a40',
-        900: '#1a1d20',
-        950: '#0d0f11'
-      }
-    },
-    {
-      name: 'steel',
-      palette: {
-        0: '#ffffff',
-        50: '#f3f4f6',
-        100: '#e5e7eb',
-        200: '#d1d5db',
-        300: '#b0b7c3',
-        400: '#8b93a6',
-        500: '#6b7280',
-        600: '#545861',
-        700: '#3f4347',
-        800: '#2c2f33',
-        900: '#16181b',
-        950: '#0b0d0e'
-      }
-    },
-    {
-      name: 'carbon',
-      palette: {
-        0: '#ffffff',
-        50: '#eef0f2',
-        100: '#dde1e6',
-        200: '#c7cdd5',
-        300: '#a8b0bc',
-        400: '#8691a0',
-        500: '#697080',
-        600: '#545a66',
-        700: '#41464f',
-        800: '#303439',
-        900: '#181a1d',
-        950: '#0c0e10'
-      }
-    },
-    {
-      name: 'ash',
-      palette: {
-        0: '#ffffff',
-        50: '#f4f6f8',
-        100: '#e6e9ed',
-        200: '#d3d8de',
-        300: '#b4bcc7',
-        400: '#919ca9',
-        500: '#71808a',
-        600: '#5a666f',
-        700: '#464f56',
-        800: '#34393e',
-        900: '#1a1e21',
-        950: '#0d1012'
-      }
-    },
-    {
-      name: 'smoke',
-      palette: {
-        0: '#ffffff',
-        50: '#f6f6f7',
-        100: '#ebebed',
-        200: '#dadadd',
-        300: '#bbbcc1',
-        400: '#989aa1',
-        500: '#797c84',
-        600: '#63666d',
-        700: '#4f5257',
-        800: '#3a3d42',
-        900: '#1d2023',
-        950: '#0e1011'
-      }
-    },
-    {
-      name: 'midnight-blue',
-      palette: {
-        0: '#ffffff',
-        50: '#fcfcfd',
-        100: '#f7f8fb',
-        200: '#f0f2f7',
-        300: '#e5e8f0',
-        400: '#d3d8e3',
-        500: '#5c6b7a',
-        600: '#4a5866',
-        700: '#3b4651',
-        800: '#38424d',
-        900: '#1f252c',
-        950: '#121518'
-      }
-    },
-    {
-      name: 'charcoal',
-      palette: {
-        0: '#ffffff',
-        50: '#f0f0f0',
-        100: '#e5e5e5',
-        200: '#d1d1d1',
-        300: '#b8b8b8',
-        400: '#9a9a9a',
-        500: '#7d7d7d',
-        600: '#666666',
-        700: '#525252',
-        800: '#3d3d3d',
-        900: '#242424',
-        950: '#141414'
-      }
-    },
-    {
-      name: 'soho',
-      palette: {
-        0: '#ffffff',
-        50: '#ececec',
-        100: '#dedfdf',
-        200: '#c4c4c6',
-        300: '#adaeb0',
-        400: '#97979b',
-        500: '#7f8084',
-        600: '#6a6b70',
-        700: '#55565b',
-        800: '#3f4046',
-        900: '#252530',
-        950: '#16161d'
-      }
-    },
-    {
-      name: 'viva',
-      palette: {
-        0: '#ffffff',
-        50: '#f3f3f3',
-        100: '#e7e7e8',
-        200: '#cfd0d0',
-        300: '#b7b8b9',
-        400: '#9fa1a1',
-        500: '#87898a',
-        600: '#6e7173',
-        700: '#565a5b',
-        800: '#3e4244',
-        900: '#1e2324',
-        950: '#0e1315'
-      }
-    },
-    {
-      name: 'ocean',
-      palette: {
-        0: '#ffffff',
-        50: '#fbfcfc',
-        100: '#F7F9F8',
-        200: '#EFF3F2',
-        300: '#DADEDD',
-        400: '#B1B7B6',
-        500: '#828787',
-        600: '#5F7274',
-        700: '#415B61',
-        800: '#324f5a',
-        900: '#183240',
-        950: '#0c1920'
-      }
-    },
-    {
-      name: 'light-slate',
-      palette: {
-        0: '#ffffff',
-        50: '#fcfcfd',
-        100: '#f8fafc',
-        200: '#f1f5f9',
-        300: '#e2e8f0',
-        400: '#cbd5e1',
-        500: '#94a3b8',
-        600: '#64748b',
-        700: '#475569',
-        800: '#3d5068',
-        900: '#1e293b',
-        950: '#0f172a'
-      }
-    },
-    {
-      name: 'olive',
-      palette: {
-        0: '#ffffff',
-        50: '#fcfcfb',
-        100: '#f8f9f6',
-        200: '#f1f4ed',
-        300: '#e6eadc',
-        400: '#d4dfc5',
-        500: '#6a755e',
-        600: '#555d4c',
-        700: '#434a3d',
-        800: '#3d4438',
-        900: '#232824',
-        950: '#131614'
-      }
-    },
-    {
-      name: 'crimson',
-      palette: {
-        0: '#ffffff',
-        50: '#fcfbfb',
-        100: '#f8f5f5',
-        200: '#f1ebeb',
-        300: '#e6d9d9',
-        400: '#d4c3c3',
-        500: '#755e5e',
-        600: '#5d4c4c',
-        700: '#4a3d3d',
-        800: '#423838',
-        900: '#242020',
-        950: '#141212'
-      }
-    }
-  ];
 
   constructor() {
     const initialState = this.loadAppState();
-    this.appState.set({ ...initialState });
-    this.document.documentElement.classList.add('p-dark');
+    this.appStateSignal.set(initialState.state);
 
-    if (isPlatformBrowser(this.platformId)) {
-      this.onPresetChange();
+    if (initialState.shouldPersist) {
+      this.saveAppState(initialState.state);
     }
-
-    effect(() => {
-      const state = this.appState();
-      if (!this.initialized || !state) {
-        this.initialized = true;
-        return;
-      }
-      this.saveAppState(state);
-      this.onPresetChange();
-    });
+    this.applyAppState(initialState.state);
   }
 
-  private loadAppState(): AppState {
+  setThemePreference(themePreference: AppTheme): void {
+    this.updateAppState({themePreference});
+  }
+
+  setCustomPrimary(customPrimary: CustomPrimary): void {
+    this.updateAppState({customPrimary});
+  }
+
+  setAppearancePreference(appearancePreference: AppearancePreference): void {
+    this.updateAppState({appearancePreference});
+  }
+
+  private updateAppState(patch: AppState): void {
+    const state = this.withDefaults({
+      ...this.appStateSignal(),
+      ...patch,
+    });
+    this.appStateSignal.set(state);
+    this.saveAppState(state);
+    this.applyAppState(state);
+  }
+
+  private loadAppState(): LoadedAppState {
     if (isPlatformBrowser(this.platformId)) {
       const storedState = localStorage.getItem(this.STORAGE_KEY);
       if (storedState) {
-        return JSON.parse(storedState);
+        try {
+          const parsedState = JSON.parse(storedState) as StoredAppState;
+          return {
+            state: this.normalizeStoredState(parsedState),
+            shouldPersist: this.isLegacyPaletteState(parsedState),
+          };
+        } catch {
+          return {state: this.withDefaults({}), shouldPersist: false};
+        }
       }
     }
+
+    return {state: this.withDefaults({}), shouldPersist: false};
+  }
+
+  private normalizeStoredState(state: StoredAppState): AppState {
+    if (this.isLegacyPaletteState(state)) {
+      return this.withDefaults({
+        themePreference: DEFAULT_APP_THEME,
+        appearancePreference: LEGACY_APPEARANCE_PREFERENCE,
+        customPrimary: DEFAULT_CUSTOM_PRIMARY,
+      });
+    }
+
+    return this.withDefaults({
+      themePreference: state.themePreference,
+      appearancePreference: state.appearancePreference,
+      customPrimary: state.customPrimary,
+    });
+  }
+
+  private isLegacyPaletteState(state: StoredAppState): boolean {
+    return 'preset' in state || 'primary' in state || 'surface' in state;
+  }
+
+  private withDefaults(state: AppState): AppState {
     return {
-      preset: 'Aura',
-      primary: 'orange',
-      surface: 'ash',
+      themePreference: this.resolveThemePreference(state.themePreference),
+      appearancePreference: this.resolveAppearancePreference(state.appearancePreference),
+      customPrimary: this.resolveCustomPrimary(state.customPrimary),
     };
+  }
+
+  private resolveCustomPrimary(customPrimary: AppState['customPrimary']): CustomPrimary {
+    if (customPrimary && CUSTOM_PRIMARY_OPTIONS.includes(customPrimary)) {
+      return customPrimary;
+    }
+    return DEFAULT_CUSTOM_PRIMARY;
+  }
+
+  private resolveThemePreference(themePreference: AppState['themePreference']): AppTheme {
+    if (themePreference && this.themes.some((option) => option.name === themePreference)) {
+      return themePreference;
+    }
+
+    return DEFAULT_APP_THEME;
+  }
+
+  private resolveAppearancePreference(appearancePreference: AppState['appearancePreference']): AppearancePreference {
+    if (appearancePreference === 'light' || appearancePreference === 'dark' || appearancePreference === 'system') {
+      return appearancePreference;
+    }
+    return DEFAULT_APPEARANCE_PREFERENCE;
+  }
+
+  private effectiveAppearancePreference(appearancePreference: AppearancePreference): 'light' | 'dark' {
+    if (appearancePreference !== 'system') {
+      return appearancePreference;
+    }
+    if (isPlatformBrowser(this.platformId) && globalThis.window?.matchMedia) {
+      return globalThis.window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return 'dark';
   }
 
   private saveAppState(state: AppState): void {
     if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(state));
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.withDefaults(state)));
     }
   }
 
-  private getSurfacePalette(surface: string): ColorPalette {
-    return this.surfaces.find(s => s.name === surface)?.palette ?? {};
+  applyCurrentTheme(): void {
+    this.applyAppState(this.withDefaults(this.appStateSignal()));
   }
 
-  private resolveThemePalettes(): ResolvedThemePalettes {
-    const primaryName = this.appState().primary ?? 'orange';
-    const surfaceName = this.appState().surface ?? 'ash';
-    const presetPalette = (Aura.primitive ?? {}) as Record<string, ColorPalette>;
-    const primary = presetPalette[primaryName] ?? presetPalette['orange'] ?? {};
-    const surface = this.getSurfacePalette(surfaceName);
-    const isNoir = primaryName === 'noir';
+  private applyAppState(state: AppState): void {
+    this.applyThemeAttributes(state);
 
-    return {
-      primary,
-      surface,
-      appPrimary: isNoir ? surface : primary,
-      isNoir,
-    };
-  }
-
-  private buildPrimePreset(theme: ResolvedThemePalettes): object {
-    if (theme.isNoir) {
-      return {
-        semantic: {
-          primary: { ...theme.surface },
-          colorScheme: {
-            dark: {
-              primary: {
-                color: '{primary.50}',
-                contrastColor: '{primary.950}',
-                hoverColor: '{primary.200}',
-                activeColor: '{primary.300}'
-              },
-              highlight: {
-                background: '{primary.50}',
-                focusBackground: '{primary.300}',
-                color: '{primary.950}',
-                focusColor: '{primary.950}'
-              }
-            }
-          }
-        }
-      };
-    }
-
-    return {
-      semantic: {
-        primary: theme.primary,
-        colorScheme: {
-          dark: {
-            primary: {
-              color: '{primary.400}',
-              contrastColor: '{surface.900}',
-              hoverColor: '{primary.300}',
-              activeColor: '{primary.200}'
-            },
-            highlight: {
-              background: 'color-mix(in srgb, {primary.400}, transparent 84%)',
-              focusBackground: 'color-mix(in srgb, {primary.400}, transparent 76%)',
-              color: 'rgba(255,255,255,.87)',
-              focusColor: 'rgba(255,255,255,.87)'
-            }
-          }
-        }
-      }
-    };
-  }
-
-  private getFaviconGradient(theme: ResolvedThemePalettes): { start: string; end: string } {
-    if (theme.isNoir) {
-      return {
-        start: theme.surface['50'] ?? theme.surface['0'] ?? '#f4f6f8',
-        end: theme.surface['300'] ?? theme.surface['200'] ?? '#b4bcc7'
-      };
-    }
-
-    return {
-      start: theme.primary['300'] ?? theme.primary['500'] ?? '#fdba74',
-      end: theme.primary['500'] ?? theme.primary['700'] ?? '#f97316'
-    };
-  }
-
-  onPresetChange(): void {
     if (!isPlatformBrowser(this.platformId)) {
       return;
     }
 
-    const theme = this.resolveThemePalettes();
-    this.applyPrimeTheme(theme);
-    this.applyDesignTokens(theme);
-    const faviconGradient = this.getFaviconGradient(theme);
-    this.faviconService.updateFavicon(faviconGradient.start, faviconGradient.end);
+    applyPrimeTheme(primeThemeTokenPalettes());
+    this.updateFavicon();
   }
 
-  private applyPrimeTheme(theme: ResolvedThemePalettes): void {
-    $t()
-      .preset(Aura)
-      .preset(this.buildPrimePreset(theme))
-      .surfacePalette(theme.surface)
-      .use({ useDefaultOptions: true });
+  private applyThemeAttributes(state: AppState): void {
+    const root = this.document.documentElement;
+    const theme = this.resolveThemePreference(state.themePreference);
+    const appearancePreference = this.resolveAppearancePreference(state.appearancePreference);
+    const effective = this.effectiveAppearancePreference(appearancePreference);
+
+    root.dataset['appTheme'] = theme;
+    root.classList.toggle('dark', effective === 'dark');
+    root.style.setProperty('color-scheme', effective);
+    this.applyCustomPrimary(root, theme, this.resolveCustomPrimary(state.customPrimary));
+    this.syncSystemSchemeListener(appearancePreference);
   }
 
-  private applyDesignTokens(theme: ResolvedThemePalettes): void {
-    const style = this.document.documentElement.style;
-    const appBackground = theme.surface['950'] ?? '#0d1012';
-    const surfaceContent = theme.surface['900'] ?? '#1a1e21';
-    const pageBackground = `color-mix(in srgb, ${surfaceContent} 82%, ${appBackground})`;
-    const surfaceCard = `color-mix(in srgb, ${surfaceContent} 62%, ${theme.surface['800'] ?? '#34393e'})`;
-    const borderSubtle = theme.surface['800'] ?? '#34393e';
-    const borderStrong = theme.surface['700'] ?? '#464f56';
+  private applyCustomPrimary(root: HTMLElement, theme: AppTheme, customPrimary: CustomPrimary): void {
+    if (theme === 'custom') {
+      PRIMARY_COLOR_STOPS.forEach((stop) => {
+        root.style.setProperty(`--color-primary-${stop}`, `var(--color-${customPrimary}-${stop})`);
+      });
+    } else {
+      PRIMARY_COLOR_STOPS.forEach((stop) => root.style.removeProperty(`--color-primary-${stop}`));
+    }
+  }
 
-    const primary400 = theme.isNoir ? theme.surface['50'] : theme.primary['400'];
-    const primary500 = theme.isNoir ? theme.surface['50'] : (theme.primary['500'] ?? theme.primary['400']);
+  private systemSchemeMedia: MediaQueryList | null = null;
+  private systemSchemeListener: ((event: MediaQueryListEvent) => void) | null = null;
 
-    style.setProperty('--primary-color', primary400 ?? '#fb923c');
-    style.setProperty('--primary-color-rgb', this.toRgbChannels(primary500));
-    style.setProperty('--primary-contrast-color', theme.isNoir ? (theme.surface['950'] ?? '#0d1012') : (theme.surface['900'] ?? '#1a1e21'));
-    style.setProperty('--primary-hover-color', theme.isNoir ? (theme.surface['200'] ?? '#d3d8de') : (theme.primary['300'] ?? primary400 ?? '#fdba74'));
-    style.setProperty('--primary-text-color', primary400 ?? '#fb923c');
-    style.setProperty('--primary-text-color-dark', theme.isNoir ? (theme.surface['950'] ?? '#0d1012') : (theme.primary['900'] ?? '#9a3412'));
-
-    style.setProperty('--surface-app', appBackground);
-    style.setProperty('--surface-page', pageBackground);
-    style.setProperty('--surface-content', surfaceContent);
-    style.setProperty('--surface-card', surfaceCard);
-    style.setProperty('--surface-toolbar', `color-mix(in srgb, ${appBackground} 70%, ${surfaceContent})`);
-    style.setProperty('--surface-overlay', surfaceContent);
-    style.setProperty('--border-subtle', borderSubtle);
-    style.setProperty('--border-strong', borderStrong);
-    style.setProperty('--state-hover', 'color-mix(in srgb, var(--surface-400) 12%, transparent)');
-    style.setProperty('--state-active', 'color-mix(in srgb, var(--primary-color) 8%, transparent)');
-
-    style.setProperty('--ground-background', 'var(--surface-app)');
-    style.setProperty('--overlay-background', 'var(--surface-overlay)');
-    style.setProperty('--card-background', 'var(--surface-card)');
-    style.setProperty('--content-background', 'var(--surface-content)');
-    style.setProperty('--code-background', 'var(--surface-content)');
-    style.setProperty('--border-color', 'var(--border-subtle)');
-    style.setProperty('--content-border-color', 'var(--border-subtle)');
-    style.setProperty('--surface-hover', 'var(--state-hover)');
-    style.setProperty('--surface-border', 'var(--border-subtle)');
-    style.setProperty('--text-color', theme.surface['0'] ?? '#ffffff');
-    style.setProperty('--text-color-secondary', theme.surface['300'] ?? '#b4bcc7');
-    style.setProperty('--text-secondary-color', theme.surface['400'] ?? '#919ca9');
-    style.setProperty('--text-muted-color', theme.surface['400'] ?? '#919ca9');
-    style.setProperty('--high-contrast-text-color', theme.surface['0'] ?? '#ffffff');
-
-    Object.entries(theme.surface).forEach(([stop, value]) => {
-      style.setProperty(`--surface-${stop}`, value);
-    });
-
-    COLOR_STOPS.forEach((stop) => {
-      const value = theme.appPrimary[stop];
-      if (value) {
-        style.setProperty(`--primary-${stop}`, value);
+  private syncSystemSchemeListener(appearancePreference: AppearancePreference): void {
+    if (!isPlatformBrowser(this.platformId) || !globalThis.window?.matchMedia) {
+      return;
+    }
+    if (appearancePreference === 'system') {
+      if (!this.systemSchemeMedia) {
+        this.systemSchemeMedia = globalThis.window.matchMedia('(prefers-color-scheme: dark)');
+        this.systemSchemeListener = () => this.applyCurrentTheme();
+        this.systemSchemeMedia.addEventListener('change', this.systemSchemeListener);
       }
-    });
+    } else if (this.systemSchemeMedia && this.systemSchemeListener) {
+      this.systemSchemeMedia.removeEventListener('change', this.systemSchemeListener);
+      this.systemSchemeMedia = null;
+      this.systemSchemeListener = null;
+    }
   }
 
-  private toRgbChannels(color: string | undefined): string {
-    if (!color) {
-      return '74, 222, 128';
-    }
-
-    const normalized = color.startsWith('#') ? color.slice(1) : color;
-    const hex = normalized.length === 3
-      ? normalized.split('').map((char) => char + char).join('')
-      : normalized;
-
-    if (hex.length !== 6) {
-      return '74, 222, 128';
-    }
-
-    const value = Number.parseInt(hex, 16);
-    if (Number.isNaN(value)) {
-      return '74, 222, 128';
-    }
-
-    return `${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}`;
+  private updateFavicon(): void {
+    const styles = getComputedStyle(this.document.documentElement);
+    this.faviconService.updateFavicon(
+      styles.getPropertyValue('--color-primary-300').trim(),
+      styles.getPropertyValue('--color-primary-500').trim(),
+    );
   }
 }

@@ -24,65 +24,102 @@
   <div class="form-container">
     <div class="form-section preferences-section">
       <h3 class="section-title">
+        <i class="pi pi-palette" aria-hidden="true"></i>
+        {{ 'settingsView.theme.sectionTitle' | transloco }}
+      </h3>
+
+      <div class="form-field">
+        <label class="field-label" for="app-appearance">{{ 'layout.theme.appearance' | transloco }}</label>
+        <p-select
+          inputId="app-appearance"
+          [options]="appearanceOptions()"
+          [ngModel]="selectedAppearancePreference()"
+          (ngModelChange)="updateAppearancePreference($event)"
+          optionLabel="label"
+          optionValue="value"
+          appendTo="body"
+          class="preference-select">
+        </p-select>
+      </div>
+
+      <div class="form-field">
+        <label class="field-label" for="app-theme">{{ 'layout.theme.theme' | transloco }}</label>
+        <p-select
+          inputId="app-theme"
+          [options]="themeOptions()"
+          [ngModel]="selectedThemePreference()"
+          (ngModelChange)="updateThemePreference($event)"
+          optionLabel="label"
+          optionValue="value"
+          appendTo="body"
+          class="preference-select">
+          <ng-template #selectedItem let-option>
+            @if (option) {
+              <span class="inline-flex items-center gap-2.5 min-w-0">
+                @if (option.value !== 'custom') {
+                  <span
+                    class="w-3.5 h-3.5 rounded-full shrink-0 ring-1 ring-black/15 ring-inset bg-(--color-primary-500)"
+                    [attr.data-app-theme]="option.value"
+                    aria-hidden="true">
+                  </span>
+                }
+                <span>{{ option.label }}</span>
+              </span>
+            }
+          </ng-template>
+          <ng-template #item let-option>
+            <span class="inline-flex items-center gap-2.5 min-w-0">
+              @if (option.value !== 'custom') {
+                <span
+                  class="w-3.5 h-3.5 rounded-full shrink-0 ring-1 ring-black/15 ring-inset bg-(--color-primary-500)"
+                  [attr.data-app-theme]="option.value"
+                  aria-hidden="true">
+                </span>
+              }
+              <span>{{ option.label }}</span>
+            </span>
+          </ng-template>
+        </p-select>
+      </div>
+
+      @if (selectedThemePreference() === 'custom') {
+        <fieldset class="form-field">
+          <legend class="field-label">{{ 'layout.theme.customPrimary' | transloco }}</legend>
+          <div class="custom-primary-card">
+            <div class="custom-primary-options">
+              @for (palette of customPrimaryOptions; track palette) {
+                <button
+                  type="button"
+                  [class]="'w-7 h-7 rounded-full cursor-pointer shadow-[inset_0_0_0_1px_rgb(0_0_0_/_0.1)] dark:shadow-[inset_0_0_0_1px_rgb(255_255_255_/_0.1)] ' + (palette === selectedCustomPrimary() ? 'ring-1 ring-black dark:ring-white' : '')"
+                  [style.background]="'var(--color-' + palette + '-500)'"
+                  [attr.aria-label]="palette"
+                  [attr.aria-pressed]="palette === selectedCustomPrimary()"
+                  (click)="updateCustomPrimary(palette)">
+                </button>
+              }
+            </div>
+          </div>
+        </fieldset>
+      }
+    </div>
+
+    <div class="gradient-divider"></div>
+
+    <div class="form-section preferences-section">
+      <h3 class="section-title">
         <i class="pi pi-language" aria-hidden="true"></i>
         {{ 'settingsView.language.sectionTitle' | transloco }}
       </h3>
 
       <p-select
-        size="small"
         [options]="languageOptions"
         [ngModel]="activeLang()"
         (ngModelChange)="onLanguageChange($event)"
         optionLabel="label"
         optionValue="value"
         appendTo="body"
-        class="language-select">
+        class="preference-select">
       </p-select>
-    </div>
-
-    <div class="gradient-divider"></div>
-
-    <div class="form-section preferences-section">
-      <div class="preference-group">
-        <h3 class="section-title">
-          <i class="pi pi-palette" aria-hidden="true"></i>
-          {{ 'settingsView.theme.sectionTitle' | transloco }}
-        </h3>
-
-        <div class="theme-row">
-          <span class="theme-row-label">{{ 'layout.theme.primary' | transloco }}</span>
-          <div class="color-swatches">
-            @for (primaryColor of primaryColors; track primaryColor.name) {
-              <button
-                type="button"
-                [title]="primaryColor.name"
-                [attr.aria-label]="primaryColor.name"
-                [attr.aria-pressed]="primaryColor.name === selectedPrimaryColor()"
-                (click)="updateThemeColor($event, 'primary', primaryColor)"
-                [ngClass]="{ 'active-color': primaryColor.name === selectedPrimaryColor() }"
-                [style]="{ 'background-color': primaryColor.name === 'noir' ? 'var(--text-color)' : primaryColor.palette['500'] || 'transparent' }">
-              </button>
-            }
-          </div>
-        </div>
-
-        <div class="theme-row">
-          <span class="theme-row-label">{{ 'layout.theme.surface' | transloco }}</span>
-          <div class="color-swatches">
-            @for (surface of surfaces; track surface.name) {
-              <button
-                type="button"
-                [title]="surface.name"
-                [attr.aria-label]="surface.name"
-                [attr.aria-pressed]="selectedSurfaceColor() ? selectedSurfaceColor() === surface.name : surface.name === 'zinc'"
-                (click)="updateThemeColor($event, 'surface', surface)"
-                [ngClass]="{ 'active-color': selectedSurfaceColor() ? selectedSurfaceColor() === surface.name : surface.name === 'zinc' }"
-                [style]="{ 'background-color': surface.name === 'noir' ? 'var(--text-color)' : surface.palette['500'] }">
-              </button>
-            }
-          </div>
-        </div>
-      </div>
     </div>
 
     <div class="gradient-divider"></div>

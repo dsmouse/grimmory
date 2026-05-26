@@ -9,7 +9,7 @@ import { CustomReuseStrategy } from './app/core/custom-reuse-strategy';
 import { providePrimeNG } from 'primeng/config';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
-import Aura from './app/shared/layout/theme-palette-extend';
+import Aura from './app/shared/layout/theme/theme-palette-extend';
 import { routes } from './app/app.routes';
 import { AuthInterceptorService } from './app/core/security/auth-interceptor.service';
 import { AuthService, websocketInitializer } from './app/shared/service/auth.service';
@@ -73,7 +73,8 @@ bootstrapApplication(AppComponent, {
       theme: {
         preset: Aura,
         options: {
-          darkModeSelector: '.p-dark'
+          darkModeSelector: '.dark',
+          cssLayer: { name: 'primeng', order: 'theme, base, primeng, components, utilities' }
         }
       }
     }), provideServiceWorker('ngsw-worker.js', {

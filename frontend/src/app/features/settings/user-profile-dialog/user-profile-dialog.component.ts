@@ -1,4 +1,3 @@
-import {NgClass} from '@angular/common';
 import {Component, DestroyRef, computed, effect, inject} from '@angular/core';
 import {Button} from 'primeng/button';
 import {AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators} from '@angular/forms';
@@ -13,14 +12,14 @@ import {takeUntilDestroyed, toSignal} from '@angular/core/rxjs-interop';
 import {AVAILABLE_LANGS, LANG_LABELS} from '../../../core/config/transloco-loader';
 import {LANG_STORAGE_KEY} from '../../../core/config/language-initializer';
 import {AppConfigService} from '../../../shared/service/app-config.service';
-import Aura from '../../../shared/layout/theme-palette-extend';
-
-type ColorPalette = Record<string, string>;
-
-interface Palette {
-  name: string;
-  palette: ColorPalette;
-}
+import {
+  AppearancePreference,
+  AppTheme,
+  CUSTOM_PRIMARY_OPTIONS,
+  CustomPrimary,
+  DEFAULT_APP_THEME,
+  DEFAULT_CUSTOM_PRIMARY,
+} from '../../../shared/model/app-state.model';
 
 export const passwordMatchValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
   const newPassword = control.get('newPassword');
@@ -42,7 +41,6 @@ export const passwordMatchValidator: ValidatorFn = (control: AbstractControl): V
     InputText,
     Password,
     Select,
-    NgClass,
     TranslocoDirective,
     TranslocoPipe,
   ],
@@ -68,10 +66,27 @@ export class UserProfileDialogComponent {
   private readonly t = inject(TranslocoService);
   private readonly destroyRef = inject(DestroyRef);
   protected readonly activeLang = toSignal(this.t.langChanges$, {initialValue: this.t.getActiveLang()});
-  protected readonly selectedPrimaryColor = computed(() => this.configService.appState().primary);
-  protected readonly selectedSurfaceColor = computed(() => this.configService.appState().surface);
-  protected readonly surfaces = this.configService.surfaces;
-  protected readonly primaryColors = this.getPrimaryColors();
+  protected readonly selectedThemePreference = computed(() => this.configService.appState().themePreference ?? DEFAULT_APP_THEME);
+  protected readonly selectedAppearancePreference = computed(() => this.configService.appState().appearancePreference ?? 'system');
+  protected readonly selectedCustomPrimary = computed<CustomPrimary>(
+    () => this.configService.appState().customPrimary ?? DEFAULT_CUSTOM_PRIMARY,
+  );
+  protected readonly customPrimaryOptions = CUSTOM_PRIMARY_OPTIONS;
+  protected readonly themeOptions = computed(() => {
+    this.activeLang();
+    return this.configService.themes.map((theme) => ({
+      value: theme.name,
+      label: this.t.translate(theme.labelKey),
+    }));
+  });
+  protected readonly appearanceOptions = computed(() => {
+    this.activeLang();
+    return [
+      {value: 'light' as AppearancePreference, label: this.t.translate('layout.theme.light')},
+      {value: 'dark' as AppearancePreference, label: this.t.translate('layout.theme.dark')},
+      {value: 'system' as AppearancePreference, label: this.t.translate('layout.theme.system')},
+    ];
+  });
 
   constructor() {
     this.changePasswordForm = this.fb.group(
@@ -119,31 +134,16 @@ export class UserProfileDialogComponent {
     });
   }
 
-  updateThemeColor(event: Event, type: 'primary' | 'surface', color: { name: string; palette?: ColorPalette }): void {
-    this.configService.appState.update((state) => ({
-      ...state,
-      [type]: color.name,
-    }));
-    event.stopPropagation();
+  updateThemePreference(themePreference: AppTheme): void {
+    this.configService.setThemePreference(themePreference);
   }
 
-  private getPrimaryColors(): Palette[] {
-    const presetPalette = (Aura.primitive ?? {}) as Record<string, ColorPalette>;
-    const colors = [
-      'orange', 'amber', 'yellow', 'lime', 'green', 'emerald',
-      'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet',
-      'purple', 'fuchsia', 'pink', 'rose', 'red',
-      'coralSunset', 'roseBlush', 'melonBlush', 'cottonCandy',
-      'apricotSunrise', 'antiqueBronze', 'butteryYellow', 'vanillaCream',
-      'citrusMint', 'freshMint', 'sagePearl', 'skyBlue', 'periwinkleCream',
-      'pastelRoyalBlue', 'lavenderDream', 'dustyNeutral',
-    ];
-    return [{name: 'noir', palette: {}}].concat(
-      colors.map(name => ({
-        name,
-        palette: presetPalette[name] ?? {},
-      })),
-    );
+  updateCustomPrimary(customPrimary: CustomPrimary): void {
+    this.configService.setCustomPrimary(customPrimary);
+  }
+
+  updateAppearancePreference(appearancePreference: AppearancePreference): void {
+    this.configService.setAppearancePreference(appearancePreference);
   }
 
   updateProfile(): void {
