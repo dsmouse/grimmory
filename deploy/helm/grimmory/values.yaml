@@ -168,3 +168,16 @@ initContainer:
 nodeSelector: {}
 tolerations: []
 affinity: {}
+
+# Additional items that need to be installed next to the application, e.g.
+# extraObjects:
+# - apiVersion: k8s.mariadb.com/v1alpha1
+#   kind: MariaDB
+#   metadata:
+#     name: grimmory-mariadb
+#     namespace: grimmory
+#   spec:
+#     rootPasswordSecretKeyRef:
+#       name: grimmory-mariadb-root
+#       key: password
+extraObjects: []
