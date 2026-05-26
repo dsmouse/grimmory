@@ -15,10 +15,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +42,6 @@ public class GoodReadsParserTest {
 
     private MockedStatic<Jsoup> mockJsoup;
 
-    @InjectMocks
     private GoodReadsParser parser;
 
     private String exampleSearchJsonFixture;
@@ -51,6 +50,12 @@ public class GoodReadsParserTest {
 
     @BeforeEach
     void setUp() throws IOException {
+        parser = new GoodReadsParser(
+                httpClient,
+                appSettingService,
+                new ObjectMapper()
+        );
+
         exampleSearchJsonFixture = readFixture("example-search.json");
         exampleBookHtmlFixture = readFixture("example-book.html");
 
