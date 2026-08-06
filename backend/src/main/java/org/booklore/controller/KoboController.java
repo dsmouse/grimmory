@@ -26,6 +26,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 
@@ -72,7 +73,7 @@ public class KoboController {
     @Operation(summary = "Sync Kobo library", description = "Sync the user's Kobo library.")
     @ApiResponse(responseCode = "200", description = "Library synced successfully")
     @GetMapping("/v1/library/sync")
-    public ResponseEntity<List<Entitlement>> syncLibrary(@AuthenticationPrincipal BookLoreUser user) {
+    public ResponseEntity<StreamingResponseBody> syncLibrary(@AuthenticationPrincipal BookLoreUser user) {
         return koboLibrarySyncService.syncLibrary(user, token);
     }
 

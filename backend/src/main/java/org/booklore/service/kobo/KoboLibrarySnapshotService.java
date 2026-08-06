@@ -9,12 +9,14 @@ import org.booklore.repository.KoboDeletedBookProgressRepository;
 import org.booklore.repository.KoboLibrarySnapshotRepository;
 import org.booklore.repository.KoboSnapshotBookRepository;
 import org.booklore.repository.ShelfRepository;
+import org.booklore.repository.UserBookProgressRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.*;
 
 @AllArgsConstructor
@@ -26,6 +28,7 @@ public class KoboLibrarySnapshotService {
     private final ShelfRepository shelfRepository;
     private final BookEntityToKoboSnapshotBookMapper mapper;
     private final KoboDeletedBookProgressRepository koboDeletedBookProgressRepository;
+    private final UserBookProgressRepository userBookProgressRepository;
     private final KoboCompatibilityService koboCompatibilityService;
     private final AuthenticationService authenticationService;
 
@@ -47,16 +50,9 @@ public class KoboLibrarySnapshotService {
         return koboLibrarySnapshotRepository.save(snapshot);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Page<KoboSnapshotBookEntity> getUnsyncedBooks(String snapshotId, Pageable pageable) {
-        Page<KoboSnapshotBookEntity> page = koboSnapshotBookRepository.findBySnapshot_IdAndSyncedFalse(snapshotId, pageable);
-        List<Long> bookIds = page.getContent().stream()
-                .map(KoboSnapshotBookEntity::getBookId)
-                .toList();
-        if (!bookIds.isEmpty()) {
-            koboSnapshotBookRepository.markBooksSynced(snapshotId, bookIds);
-        }
-        return page;
+        return koboSnapshotBookRepository.findBySnapshot_IdAndSyncedFalse(snapshotId, pageable);
     }
 
     @Transactional
@@ -71,28 +67,41 @@ public class KoboLibrarySnapshotService {
         }
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Page<KoboSnapshotBookEntity> getNewlyAddedBooks(String previousSnapshotId, String currentSnapshotId, Pageable pageable, Long userId) {
-        Page<KoboSnapshotBookEntity> page = koboSnapshotBookRepository.findNewlyAddedBooks(previousSnapshotId, currentSnapshotId, true, pageable);
-        List<Long> newlyAddedBookIds = page.getContent().stream()
-                .map(KoboSnapshotBookEntity::getBookId)
-                .toList();
-
-        if (!newlyAddedBookIds.isEmpty()) {
-            koboSnapshotBookRepository.markBooksSynced(currentSnapshotId, newlyAddedBookIds);
-        }
-
-        return page;
+        return koboSnapshotBookRepository.findNewlyAddedBooks(previousSnapshotId, currentSnapshotId, true, pageable);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Page<KoboSnapshotBookEntity> getRemovedBooks(String previousSnapshotId, String currentSnapshotId, Long userId, Pageable pageable) {
-        Page<KoboSnapshotBookEntity> page = koboSnapshotBookRepository.findRemovedBooks(previousSnapshotId, currentSnapshotId, pageable);
+        return koboSnapshotBookRepository.findRemovedBooks(previousSnapshotId, currentSnapshotId, pageable);
+    }
 
-        List<Long> bookIds = page.getContent().stream()
-                .map(KoboSnapshotBookEntity::getBookId)
-                .toList();
+    @Transactional(readOnly = true)
+    public Page<KoboSnapshotBookEntity> getChangedBooks(String previousSnapshotId, String currentSnapshotId, Pageable pageable) {
+        return koboSnapshotBookRepository.findChangedBooks(previousSnapshotId, currentSnapshotId, pageable);
+    }
 
+    /**
+     * Marks books synced. Must only be called after the response containing their
+     * entitlements has been confirmed successfully delivered to the device - see
+     * KoboLibrarySyncService's post-write completion handling. Calling this before
+     * delivery is confirmed is the exact bug this method exists to avoid repeating
+     * (Arcana incident 20260805-grimmory-kobo-sync-crash, BUG-3).
+     */
+    @Transactional
+    public void markBooksSyncedAfterDelivery(String snapshotId, Collection<Long> bookIds) {
+        if (!bookIds.isEmpty()) {
+            koboSnapshotBookRepository.markBooksSynced(snapshotId, new ArrayList<>(bookIds));
+        }
+    }
+
+    /**
+     * Records removed-book progress entries. Must only be called after delivery is
+     * confirmed - see {@link #markBooksSyncedAfterDelivery}.
+     */
+    @Transactional
+    public void recordRemovedBooksAfterDelivery(String currentSnapshotId, Long userId, Collection<Long> bookIds) {
         if (!bookIds.isEmpty()) {
             List<KoboDeletedBookProgressEntity> progressEntities = bookIds.stream()
                     .map(bookId -> KoboDeletedBookProgressEntity.builder()
@@ -104,21 +113,49 @@ public class KoboLibrarySnapshotService {
 
             koboDeletedBookProgressRepository.saveAll(progressEntities);
         }
-        return page;
     }
 
+    /**
+     * Finalizes a completed (non-continuing) sync round: retires the previous
+     * snapshot and clears stale deleted-book-progress tracking for the round that's
+     * now superseded. Must only be called after delivery is confirmed - see
+     * {@link #markBooksSyncedAfterDelivery}.
+     */
     @Transactional
-    public Page<KoboSnapshotBookEntity> getChangedBooks(String previousSnapshotId, String currentSnapshotId, Pageable pageable) {
-        Page<KoboSnapshotBookEntity> page = koboSnapshotBookRepository.findChangedBooks(previousSnapshotId, currentSnapshotId, pageable);
-        List<Long> changedBookIds = page.getContent().stream()
-                .map(KoboSnapshotBookEntity::getBookId)
-                .toList();
-
-        if (!changedBookIds.isEmpty()) {
-            koboSnapshotBookRepository.markBooksSynced(currentSnapshotId, changedBookIds);
+    public void finalizeRoundAfterDelivery(String prevSnapshotId, String originalOngoingSyncPointId, Long userId) {
+        if (prevSnapshotId != null) {
+            deleteById(prevSnapshotId);
         }
+        if (originalOngoingSyncPointId != null) {
+            koboDeletedBookProgressRepository.deleteBySnapshotIdAndUserId(originalOngoingSyncPointId, userId);
+        }
+    }
 
-        return page;
+    /**
+     * Marks reading-state sync timestamps. Must only be called after delivery is
+     * confirmed - see {@link #markBooksSyncedAfterDelivery}. Re-fetches by id rather
+     * than accepting entities directly, since the entities were read in an earlier,
+     * already-closed transaction.
+     */
+    @Transactional
+    public void markReadingStatesSentAfterDelivery(Set<Long> statusSyncIds, Set<Long> progressSyncIds) {
+        if (statusSyncIds.isEmpty() && progressSyncIds.isEmpty()) {
+            return;
+        }
+        Set<Long> allIds = new HashSet<>(statusSyncIds);
+        allIds.addAll(progressSyncIds);
+        List<UserBookProgressEntity> entities = userBookProgressRepository.findAllById(allIds);
+
+        Instant sentTime = Instant.now();
+        for (UserBookProgressEntity entity : entities) {
+            if (statusSyncIds.contains(entity.getId())) {
+                entity.setKoboStatusSentTime(sentTime);
+            }
+            if (progressSyncIds.contains(entity.getId())) {
+                entity.setKoboProgressSentTime(sentTime);
+            }
+        }
+        userBookProgressRepository.saveAll(entities);
     }
 
     private ShelfEntity getKoboShelf(Long userId) {
