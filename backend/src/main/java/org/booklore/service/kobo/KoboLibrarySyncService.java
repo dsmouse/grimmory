@@ -141,6 +141,15 @@ public class KoboLibrarySyncService {
             }
         }
 
+        // TEMPORARY DIAGNOSTIC — see Arcana incident 20260805-grimmory-kobo-sync-crash.
+        // Remove once real payload-size numbers have been captured from a live failure.
+        try {
+            log.warn("KOBO_SYNC_DIAGNOSTIC: local entitlements count={} bytes={} shouldContinueSync={}",
+                    entitlements.size(), objectMapper.writeValueAsBytes(entitlements).length, shouldContinueSync);
+        } catch (Exception e) {
+            log.warn("KOBO_SYNC_DIAGNOSTIC: failed to measure local entitlements size", e);
+        }
+
         if (!shouldContinueSync && isForwardingToKoboStore()) {
             ResponseEntity<JsonNode> koboStoreResponse = null;
             try {
@@ -150,7 +159,21 @@ public class KoboLibrarySyncService {
             }
 
             if (koboStoreResponse != null) {
-                entitlements.addAll(getEntitlementsFromKoboStoreResponse(koboStoreResponse));
+                Collection<Entitlement> forwardedEntitlements = getEntitlementsFromKoboStoreResponse(koboStoreResponse);
+
+                // TEMPORARY DIAGNOSTIC — same as above.
+                try {
+                    JsonNode rawBody = koboStoreResponse.getBody();
+                    int rawNodeCount = rawBody != null && rawBody.isArray() ? rawBody.size() : -1;
+                    int rawBytes = rawBody != null ? objectMapper.writeValueAsBytes(rawBody).length : -1;
+                    int forwardedBytes = objectMapper.writeValueAsBytes(forwardedEntitlements).length;
+                    log.warn("KOBO_SYNC_DIAGNOSTIC: kobo store forward rawNodeCount={} rawBytes={} recognizedCount={} recognizedBytes={}",
+                            rawNodeCount, rawBytes, forwardedEntitlements.size(), forwardedBytes);
+                } catch (Exception e) {
+                    log.warn("KOBO_SYNC_DIAGNOSTIC: failed to measure kobo store forward size", e);
+                }
+
+                entitlements.addAll(forwardedEntitlements);
 
                 String upstreamContinueSyncHeader = koboStoreResponse.getHeaders().getFirst(KoboHeaders.X_KOBO_SYNC);
                 String upstreamKoboSyncTokenHeader = koboStoreResponse.getHeaders().getFirst(KoboHeaders.X_KOBO_SYNCTOKEN);
@@ -161,6 +184,25 @@ public class KoboLibrarySyncService {
 
                 shouldContinueSync = "continue".equalsIgnoreCase(upstreamContinueSyncHeader);
             }
+        }
+
+        // TEMPORARY DIAGNOSTIC — same as above. Scans for a single outlier entry too,
+        // to distinguish "many medium entries" from "one abnormally large entry".
+        try {
+            int totalBytes = objectMapper.writeValueAsBytes(entitlements).length;
+            int maxSingleEntryBytes = 0;
+            String maxSingleEntryType = null;
+            for (Entitlement e : entitlements) {
+                int size = objectMapper.writeValueAsBytes(e).length;
+                if (size > maxSingleEntryBytes) {
+                    maxSingleEntryBytes = size;
+                    maxSingleEntryType = e.getClass().getSimpleName();
+                }
+            }
+            log.warn("KOBO_SYNC_DIAGNOSTIC: final response totalCount={} totalBytes={} largestEntryType={} largestEntryBytes={} shouldContinueSync={}",
+                    entitlements.size(), totalBytes, maxSingleEntryType, maxSingleEntryBytes, shouldContinueSync);
+        } catch (Exception e) {
+            log.warn("KOBO_SYNC_DIAGNOSTIC: failed to measure final response size", e);
         }
 
         if (shouldContinueSync) {
