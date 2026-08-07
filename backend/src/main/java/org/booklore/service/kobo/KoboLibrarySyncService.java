@@ -1,6 +1,7 @@
 package org.booklore.service.kobo;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.booklore.model.dto.BookLoreUser;
@@ -9,7 +10,6 @@ import org.booklore.model.dto.kobo.*;
 import org.booklore.model.entity.KoboLibrarySnapshotEntity;
 import org.booklore.model.entity.KoboSnapshotBookEntity;
 import org.booklore.model.entity.UserBookProgressEntity;
-import org.booklore.repository.KoboDeletedBookProgressRepository;
 import org.booklore.repository.UserBookProgressRepository;
 import org.booklore.service.appsettings.AppSettingService;
 import org.booklore.util.RequestUtils;
@@ -18,10 +18,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,7 +34,6 @@ public class KoboLibrarySyncService {
     private final BookloreSyncTokenGenerator tokenGenerator;
     private final KoboLibrarySnapshotService koboLibrarySnapshotService;
     private final KoboEntitlementService entitlementService;
-    private final KoboDeletedBookProgressRepository koboDeletedBookProgressRepository;
     private final UserBookProgressRepository userBookProgressRepository;
     private final KoboServerProxy koboServerProxy;
     private final ObjectMapper objectMapper;
@@ -71,16 +70,44 @@ public class KoboLibrarySyncService {
         return appSettingService.getAppSettings().getKoboSettings().isForwardToKoboStore();
     }
 
-    @Transactional
-    public ResponseEntity<List<Entitlement>> syncLibrary(BookLoreUser user, String token) {
+    /**
+     * Builds and writes the Kobo library sync response directly to the servlet
+     * response. Deliberately does NOT mark anything as delivered (books synced,
+     * reading states sent, snapshot finalized) until after the response has been
+     * fully and successfully written to the client - see the write block at the
+     * bottom of this method. Marking delivery eagerly at read time was the root
+     * cause of a real production data-loss incident (Arcana incident
+     * 20260805-grimmory-kobo-sync-crash, BUG-3): if writing the response failed for
+     * any reason after the old code had already committed "synced", the device
+     * would never actually receive the data but the DB would insist it had.
+     * <p>
+     * Writes synchronously to the raw {@link jakarta.servlet.http.HttpServletResponse}
+     * instead of returning a {@code StreamingResponseBody} (Spring's async return
+     * type for this) deliberately: {@code StreamingResponseBody} triggers Spring's
+     * async request dispatch, which re-runs the entire security filter chain a
+     * second time on completion. {@link org.booklore.config.security.filter.KoboAuthFilter}
+     * runs after Spring Security's {@code WebAsyncManagerIntegrationFilter} in the
+     * chain, so the {@code SecurityContext} captured for async propagation is
+     * whatever was present *before* Kobo auth ran (empty) - the second pass then
+     * fails authorization on an otherwise-successful response. Writing synchronously
+     * avoids the async dispatch entirely, sidestepping that interaction rather than
+     * trying to fix Spring Security's filter ordering.
+     */
+    public void syncLibrary(BookLoreUser user, String token) {
         HttpServletRequest request = RequestUtils.getCurrentRequest();
         BookloreSyncToken syncToken = Optional.ofNullable(tokenGenerator.fromRequestHeaders(request)).orElse(new BookloreSyncToken());
+        String originalOngoingSyncPointId = syncToken.getOngoingSyncPointId();
 
         KoboLibrarySnapshotEntity currSnapshot = koboLibrarySnapshotService.findByIdAndUserId(syncToken.getOngoingSyncPointId(), user.getId()).orElseGet(() -> koboLibrarySnapshotService.create(user.getId()));
         Optional<KoboLibrarySnapshotEntity> prevSnapshot = koboLibrarySnapshotService.findByIdAndUserId(syncToken.getLastSuccessfulSyncPointId(), user.getId());
 
         List<Entitlement> entitlements = new ArrayList<>();
         boolean shouldContinueSync = false;
+
+        Set<Long> addedOrChangedOrUnsyncedIds = new HashSet<>();
+        Set<Long> removedIds = Collections.emptySet();
+        Set<Long> statusSyncIds = Collections.emptySet();
+        Set<Long> progressSyncIds = Collections.emptySet();
 
         if (prevSnapshot.isPresent()) {
             int maxRemaining = 100;
@@ -111,15 +138,20 @@ public class KoboLibrarySyncService {
 
             Set<Long> addedIds = addedAll.stream().map(KoboSnapshotBookEntity::getBookId).collect(Collectors.toSet());
             Set<Long> changedIds = changedAll.stream().map(KoboSnapshotBookEntity::getBookId).collect(Collectors.toSet());
-            Set<Long> removedIds = removedAll.stream().map(KoboSnapshotBookEntity::getBookId).collect(Collectors.toSet());
+            removedIds = removedAll.stream().map(KoboSnapshotBookEntity::getBookId).collect(Collectors.toSet());
+
+            addedOrChangedOrUnsyncedIds.addAll(addedIds);
+            addedOrChangedOrUnsyncedIds.addAll(changedIds);
 
             entitlements.addAll(entitlementService.generateNewEntitlements(addedIds, token));
             entitlements.addAll(entitlementService.generateChangedEntitlements(changedIds, token, false));
             entitlements.addAll(entitlementService.generateChangedEntitlements(removedIds, token, true));
 
-
             if (!shouldContinueSync) {
-                entitlements.addAll(syncReadingStatesToKobo(user.getId(), currSnapshot.getId()));
+                ReadingStatesToSync readingStates = computeReadingStatesToSync(user.getId(), currSnapshot.getId());
+                entitlements.addAll(readingStates.changedStates());
+                statusSyncIds = readingStates.statusSyncIds();
+                progressSyncIds = readingStates.progressSyncIds();
                 entitlements.addAll(entitlementService.generateTags());
             }
         } else {
@@ -132,11 +164,14 @@ public class KoboLibrarySyncService {
                 shouldContinueSync = page.hasNext();
                 if (!shouldContinueSync || page.getNumberOfElements() == 0) break;
             }
-            Set<Long> ids = snapshotBookEntities.stream().map(KoboSnapshotBookEntity::getBookId).collect(Collectors.toSet());
-            entitlements.addAll(entitlementService.generateNewEntitlements(ids, token));
+            addedOrChangedOrUnsyncedIds = snapshotBookEntities.stream().map(KoboSnapshotBookEntity::getBookId).collect(Collectors.toSet());
+            entitlements.addAll(entitlementService.generateNewEntitlements(addedOrChangedOrUnsyncedIds, token));
 
             if (!shouldContinueSync) {
-                entitlements.addAll(syncReadingStatesToKobo(user.getId(), currSnapshot.getId()));
+                ReadingStatesToSync readingStates = computeReadingStatesToSync(user.getId(), currSnapshot.getId());
+                entitlements.addAll(readingStates.changedStates());
+                statusSyncIds = readingStates.statusSyncIds();
+                progressSyncIds = readingStates.progressSyncIds();
                 entitlements.addAll(entitlementService.generateTags());
             }
         }
@@ -208,19 +243,54 @@ public class KoboLibrarySyncService {
         if (shouldContinueSync) {
             syncToken.setOngoingSyncPointId(currSnapshot.getId());
         } else {
-            prevSnapshot.ifPresent(sp -> koboLibrarySnapshotService.deleteById(sp.getId()));
-            koboDeletedBookProgressRepository.deleteBySnapshotIdAndUserId(syncToken.getOngoingSyncPointId(), user.getId());
             syncToken.setOngoingSyncPointId(null);
             syncToken.setLastSuccessfulSyncPointId(currSnapshot.getId());
         }
 
-        return ResponseEntity.ok()
-                .header(KoboHeaders.X_KOBO_SYNC, shouldContinueSync ? "continue" : "")
-                .header(KoboHeaders.X_KOBO_SYNCTOKEN, tokenGenerator.toBase64(syncToken))
-                .body(entitlements);
+        byte[] responseBytes = objectMapper.writeValueAsBytes(entitlements);
+
+        boolean finalShouldContinueSync = shouldContinueSync;
+        String currSnapshotId = currSnapshot.getId();
+        String prevSnapshotId = prevSnapshot.map(KoboLibrarySnapshotEntity::getId).orElse(null);
+        Long userId = user.getId();
+
+        HttpServletResponse response = RequestUtils.getCurrentResponse();
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType("application/json");
+        response.setHeader(KoboHeaders.X_KOBO_SYNC, shouldContinueSync ? "continue" : "");
+        response.setHeader(KoboHeaders.X_KOBO_SYNCTOKEN, tokenGenerator.toBase64(syncToken));
+
+        try {
+            response.getOutputStream().write(responseBytes);
+            response.getOutputStream().flush();
+        } catch (IOException e) {
+            log.warn("KOBO_SYNC_DELIVERY: failed to write response to client (bytes={}); not marking anything as delivered, device will retry", responseBytes.length, e);
+            return;
+        }
+
+        log.info("KOBO_SYNC_DELIVERY: response written successfully (bytes={}), committing delivery-confirmed writes: addedOrChangedOrUnsynced={} removed={} statusSync={} progressSync={} finalizing={}",
+                responseBytes.length, addedOrChangedOrUnsyncedIds.size(), removedIds.size(),
+                statusSyncIds.size(), progressSyncIds.size(), !finalShouldContinueSync);
+        try {
+            koboLibrarySnapshotService.markBooksSyncedAfterDelivery(currSnapshotId, addedOrChangedOrUnsyncedIds);
+            koboLibrarySnapshotService.recordRemovedBooksAfterDelivery(currSnapshotId, userId, removedIds);
+            koboLibrarySnapshotService.markReadingStatesSentAfterDelivery(statusSyncIds, progressSyncIds);
+            if (!finalShouldContinueSync) {
+                koboLibrarySnapshotService.finalizeRoundAfterDelivery(prevSnapshotId, originalOngoingSyncPointId, userId);
+            }
+            log.info("KOBO_SYNC_DELIVERY: delivery-confirmed writes committed successfully for snapshot={}", currSnapshotId);
+        } catch (Exception e) {
+            log.error("KOBO_SYNC_DELIVERY: response was written to the client but the delivery-confirmed writes FAILED for snapshot={} - device believes it has this data, DB does not reflect that. Needs investigation.", currSnapshotId, e);
+        }
     }
 
-    private List<ChangedReadingState> syncReadingStatesToKobo(Long userId, String snapshotId) {
+    private record ReadingStatesToSync(List<ChangedReadingState> changedStates, Set<Long> statusSyncIds, Set<Long> progressSyncIds) {
+        static ReadingStatesToSync empty() {
+            return new ReadingStatesToSync(Collections.emptyList(), Collections.emptySet(), Collections.emptySet());
+        }
+    }
+
+    private ReadingStatesToSync computeReadingStatesToSync(Long userId, String snapshotId) {
         List<UserBookProgressEntity> booksNeedingSync =
                 userBookProgressRepository.findAllBooksNeedingKoboSync(userId, snapshotId);
 
@@ -231,24 +301,24 @@ public class KoboLibrarySyncService {
         }
 
         if (booksNeedingSync.isEmpty()) {
-            return Collections.emptyList();
+            return ReadingStatesToSync.empty();
         }
 
         List<ChangedReadingState> changedStates = entitlementService.generateChangedReadingStates(booksNeedingSync);
 
-        Instant sentTime = Instant.now();
+        Set<Long> statusSyncIds = new HashSet<>();
+        Set<Long> progressSyncIds = new HashSet<>();
         for (UserBookProgressEntity progress : booksNeedingSync) {
             if (needsStatusSync(progress)) {
-                progress.setKoboStatusSentTime(sentTime);
+                statusSyncIds.add(progress.getId());
             }
             if (needsProgressSync(progress)) {
-                progress.setKoboProgressSentTime(sentTime);
+                progressSyncIds.add(progress.getId());
             }
         }
-        userBookProgressRepository.saveAll(booksNeedingSync);
 
-        log.info("Synced {} reading states to Kobo", changedStates.size());
-        return changedStates;
+        log.info("Prepared {} reading states to sync to Kobo", changedStates.size());
+        return new ReadingStatesToSync(changedStates, statusSyncIds, progressSyncIds);
     }
 
     private boolean needsStatusSync(UserBookProgressEntity progress) {
