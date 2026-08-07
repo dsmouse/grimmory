@@ -209,15 +209,23 @@ public class KoboLibrarySyncService {
                 outputStream.write(responseBytes);
                 outputStream.flush();
             } catch (IOException e) {
-                log.warn("Failed to write Kobo sync response to client; not marking anything as delivered, device will retry", e);
+                log.warn("KOBO_SYNC_DELIVERY: failed to write response to client (bytes={}); not marking anything as delivered, device will retry", responseBytes.length, e);
                 return;
             }
 
-            koboLibrarySnapshotService.markBooksSyncedAfterDelivery(currSnapshotId, finalAddedOrChangedOrUnsyncedIds);
-            koboLibrarySnapshotService.recordRemovedBooksAfterDelivery(currSnapshotId, userId, finalRemovedIds);
-            koboLibrarySnapshotService.markReadingStatesSentAfterDelivery(finalStatusSyncIds, finalProgressSyncIds);
-            if (!finalShouldContinueSync) {
-                koboLibrarySnapshotService.finalizeRoundAfterDelivery(prevSnapshotId, originalOngoingSyncPointId, userId);
+            log.info("KOBO_SYNC_DELIVERY: response written successfully (bytes={}), committing delivery-confirmed writes: addedOrChangedOrUnsynced={} removed={} statusSync={} progressSync={} finalizing={}",
+                    responseBytes.length, finalAddedOrChangedOrUnsyncedIds.size(), finalRemovedIds.size(),
+                    finalStatusSyncIds.size(), finalProgressSyncIds.size(), !finalShouldContinueSync);
+            try {
+                koboLibrarySnapshotService.markBooksSyncedAfterDelivery(currSnapshotId, finalAddedOrChangedOrUnsyncedIds);
+                koboLibrarySnapshotService.recordRemovedBooksAfterDelivery(currSnapshotId, userId, finalRemovedIds);
+                koboLibrarySnapshotService.markReadingStatesSentAfterDelivery(finalStatusSyncIds, finalProgressSyncIds);
+                if (!finalShouldContinueSync) {
+                    koboLibrarySnapshotService.finalizeRoundAfterDelivery(prevSnapshotId, originalOngoingSyncPointId, userId);
+                }
+                log.info("KOBO_SYNC_DELIVERY: delivery-confirmed writes committed successfully for snapshot={}", currSnapshotId);
+            } catch (Exception e) {
+                log.error("KOBO_SYNC_DELIVERY: response was written to the client but the delivery-confirmed writes FAILED for snapshot={} - device believes it has this data, DB does not reflect that. Needs investigation.", currSnapshotId, e);
             }
         };
 
