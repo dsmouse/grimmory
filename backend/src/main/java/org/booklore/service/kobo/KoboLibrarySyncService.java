@@ -1,6 +1,7 @@
 package org.booklore.service.kobo;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.booklore.model.dto.BookLoreUser;
@@ -17,7 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -71,17 +71,29 @@ public class KoboLibrarySyncService {
     }
 
     /**
-     * Builds and streams the Kobo library sync response. Deliberately does NOT mark
-     * anything as delivered (books synced, reading states sent, snapshot finalized)
-     * until after the response has been fully and successfully written to the client -
-     * see the StreamingResponseBody at the bottom of this method. Marking delivery
-     * eagerly at read time was the root cause of a real production data-loss incident
-     * (Arcana incident 20260805-grimmory-kobo-sync-crash, BUG-3): if writing the
-     * response failed for any reason after the old code had already committed
-     * "synced", the device would never actually receive the data but the DB would
-     * insist it had.
+     * Builds and writes the Kobo library sync response directly to the servlet
+     * response. Deliberately does NOT mark anything as delivered (books synced,
+     * reading states sent, snapshot finalized) until after the response has been
+     * fully and successfully written to the client - see the write block at the
+     * bottom of this method. Marking delivery eagerly at read time was the root
+     * cause of a real production data-loss incident (Arcana incident
+     * 20260805-grimmory-kobo-sync-crash, BUG-3): if writing the response failed for
+     * any reason after the old code had already committed "synced", the device
+     * would never actually receive the data but the DB would insist it had.
+     * <p>
+     * Writes synchronously to the raw {@link jakarta.servlet.http.HttpServletResponse}
+     * instead of returning a {@code StreamingResponseBody} (Spring's async return
+     * type for this) deliberately: {@code StreamingResponseBody} triggers Spring's
+     * async request dispatch, which re-runs the entire security filter chain a
+     * second time on completion. {@link org.booklore.config.security.filter.KoboAuthFilter}
+     * runs after Spring Security's {@code WebAsyncManagerIntegrationFilter} in the
+     * chain, so the {@code SecurityContext} captured for async propagation is
+     * whatever was present *before* Kobo auth ran (empty) - the second pass then
+     * fails authorization on an otherwise-successful response. Writing synchronously
+     * avoids the async dispatch entirely, sidestepping that interaction rather than
+     * trying to fix Spring Security's filter ordering.
      */
-    public ResponseEntity<StreamingResponseBody> syncLibrary(BookLoreUser user, String token) {
+    public void syncLibrary(BookLoreUser user, String token) {
         HttpServletRequest request = RequestUtils.getCurrentRequest();
         BookloreSyncToken syncToken = Optional.ofNullable(tokenGenerator.fromRequestHeaders(request)).orElse(new BookloreSyncToken());
         String originalOngoingSyncPointId = syncToken.getOngoingSyncPointId();
@@ -199,40 +211,35 @@ public class KoboLibrarySyncService {
         String currSnapshotId = currSnapshot.getId();
         String prevSnapshotId = prevSnapshot.map(KoboLibrarySnapshotEntity::getId).orElse(null);
         Long userId = user.getId();
-        Set<Long> finalAddedOrChangedOrUnsyncedIds = addedOrChangedOrUnsyncedIds;
-        Set<Long> finalRemovedIds = removedIds;
-        Set<Long> finalStatusSyncIds = statusSyncIds;
-        Set<Long> finalProgressSyncIds = progressSyncIds;
 
-        StreamingResponseBody streamingBody = outputStream -> {
-            try {
-                outputStream.write(responseBytes);
-                outputStream.flush();
-            } catch (IOException e) {
-                log.warn("KOBO_SYNC_DELIVERY: failed to write response to client (bytes={}); not marking anything as delivered, device will retry", responseBytes.length, e);
-                return;
+        HttpServletResponse response = RequestUtils.getCurrentResponse();
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType("application/json");
+        response.setHeader(KoboHeaders.X_KOBO_SYNC, shouldContinueSync ? "continue" : "");
+        response.setHeader(KoboHeaders.X_KOBO_SYNCTOKEN, tokenGenerator.toBase64(syncToken));
+
+        try {
+            response.getOutputStream().write(responseBytes);
+            response.getOutputStream().flush();
+        } catch (IOException e) {
+            log.warn("KOBO_SYNC_DELIVERY: failed to write response to client (bytes={}); not marking anything as delivered, device will retry", responseBytes.length, e);
+            return;
+        }
+
+        log.info("KOBO_SYNC_DELIVERY: response written successfully (bytes={}), committing delivery-confirmed writes: addedOrChangedOrUnsynced={} removed={} statusSync={} progressSync={} finalizing={}",
+                responseBytes.length, addedOrChangedOrUnsyncedIds.size(), removedIds.size(),
+                statusSyncIds.size(), progressSyncIds.size(), !finalShouldContinueSync);
+        try {
+            koboLibrarySnapshotService.markBooksSyncedAfterDelivery(currSnapshotId, addedOrChangedOrUnsyncedIds);
+            koboLibrarySnapshotService.recordRemovedBooksAfterDelivery(currSnapshotId, userId, removedIds);
+            koboLibrarySnapshotService.markReadingStatesSentAfterDelivery(statusSyncIds, progressSyncIds);
+            if (!finalShouldContinueSync) {
+                koboLibrarySnapshotService.finalizeRoundAfterDelivery(prevSnapshotId, originalOngoingSyncPointId, userId);
             }
-
-            log.info("KOBO_SYNC_DELIVERY: response written successfully (bytes={}), committing delivery-confirmed writes: addedOrChangedOrUnsynced={} removed={} statusSync={} progressSync={} finalizing={}",
-                    responseBytes.length, finalAddedOrChangedOrUnsyncedIds.size(), finalRemovedIds.size(),
-                    finalStatusSyncIds.size(), finalProgressSyncIds.size(), !finalShouldContinueSync);
-            try {
-                koboLibrarySnapshotService.markBooksSyncedAfterDelivery(currSnapshotId, finalAddedOrChangedOrUnsyncedIds);
-                koboLibrarySnapshotService.recordRemovedBooksAfterDelivery(currSnapshotId, userId, finalRemovedIds);
-                koboLibrarySnapshotService.markReadingStatesSentAfterDelivery(finalStatusSyncIds, finalProgressSyncIds);
-                if (!finalShouldContinueSync) {
-                    koboLibrarySnapshotService.finalizeRoundAfterDelivery(prevSnapshotId, originalOngoingSyncPointId, userId);
-                }
-                log.info("KOBO_SYNC_DELIVERY: delivery-confirmed writes committed successfully for snapshot={}", currSnapshotId);
-            } catch (Exception e) {
-                log.error("KOBO_SYNC_DELIVERY: response was written to the client but the delivery-confirmed writes FAILED for snapshot={} - device believes it has this data, DB does not reflect that. Needs investigation.", currSnapshotId, e);
-            }
-        };
-
-        return ResponseEntity.ok()
-                .header(KoboHeaders.X_KOBO_SYNC, shouldContinueSync ? "continue" : "")
-                .header(KoboHeaders.X_KOBO_SYNCTOKEN, tokenGenerator.toBase64(syncToken))
-                .body(streamingBody);
+            log.info("KOBO_SYNC_DELIVERY: delivery-confirmed writes committed successfully for snapshot={}", currSnapshotId);
+        } catch (Exception e) {
+            log.error("KOBO_SYNC_DELIVERY: response was written to the client but the delivery-confirmed writes FAILED for snapshot={} - device believes it has this data, DB does not reflect that. Needs investigation.", currSnapshotId, e);
+        }
     }
 
     private record ReadingStatesToSync(List<ChangedReadingState> changedStates, Set<Long> statusSyncIds, Set<Long> progressSyncIds) {
