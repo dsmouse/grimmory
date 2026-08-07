@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 FROM --platform=$BUILDPLATFORM node:24-alpine AS frontend-build
 
 ENV PNPM_HOME="/pnpm"
